@@ -4,6 +4,7 @@ if ( ! defined( 'ABSPATH' ) && 'cli' !== PHP_SAPI ) {
 	exit;
 }
 defined( 'ABSPATH' ) || define( 'ABSPATH', __DIR__ );
+defined( 'DAY_IN_SECONDS' ) || define( 'DAY_IN_SECONDS', 86400 );
 require __DIR__ . '/../includes/autoload.php';
 use Twinspot_Lite\Core\Normalize;
 use Twinspot_Lite\Core\Rings;
@@ -56,3 +57,10 @@ twinspot_lite_eq(
 twinspot_lite_eq( Rings::shared( array( 'email_h' => '', 'phone_h' => '', 'addr_h' => '' ), array( array( 'email_h' => '', 'phone_h' => '', 'addr_h' => '' ) ) ), array(), 'empty hashes match nothing' );
 twinspot_lite_eq( \Twinspot_Lite\Core\Csv::row( array( 'a"b', '=1+1', 5 ) ), "\"a\"\"b\",\"'=1+1\",\"5\"\r\n", 'csv row' );
 echo "ok shared+csv\n";
+
+// Pro upsell visibility (pure).
+twinspot_lite_eq( \Twinspot_Lite\Features\ProUpsell::should_show( 1, true, 0 ), false, 'hidden_when_pro_active' );
+twinspot_lite_eq( \Twinspot_Lite\Features\ProUpsell::should_show( 1, false, time() + 5 * DAY_IN_SECONDS ), false, 'hidden_within_30_days_of_dismissal' );
+twinspot_lite_eq( \Twinspot_Lite\Features\ProUpsell::should_show( 1, false, 0 ), true, 'shown_never_dismissed' );
+twinspot_lite_eq( \Twinspot_Lite\Features\ProUpsell::should_show( 1, false, time() - 1 ), true, 'shown_after_dismissal_expired' );
+echo "ok upsell\n";
