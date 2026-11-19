@@ -122,7 +122,8 @@ class Edges {
 			if ( count( $seen ) >= $limit ) {
 				break;
 			}
-			$rows     = $wpdb->get_results( "SELECT * FROM {$this->table()} WHERE order_id IN (" . implode( ',', $frontier ) . ')', ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQL.NotPrepared -- ids are cast to int.
+			$marks    = implode( ',', array_fill( 0, count( $frontier ), '%d' ) );
+			$rows     = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM {$this->table()} WHERE order_id IN ({$marks})", $frontier ), ARRAY_A ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare -- table name and %d placeholders only.
 			$frontier = array();
 			foreach ( array_keys( Rings::LINKS ) as $col ) {
 				$hashes = array_values( array_unique( array_filter( array_column( (array) $rows, $col ) ) ) );
