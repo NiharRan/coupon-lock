@@ -4,7 +4,7 @@ Tags: woocommerce, coupons, fraud, abuse, checkout
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.4.0
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -77,6 +77,9 @@ The admin screen is a React app. The files in `build/` are compiled from the rea
 The build bundles these libraries, all GPL-compatible: @radix-ui/react-dialog, @xyflow/react, motion, clsx and tailwind-merge (MIT); d3-force and lucide-react (ISC); class-variance-authority (Apache-2.0). Their licenses are in the repository's `package-lock.json` and in each package on npm.
 
 == Changelog ==
+
+= 0.5.0 =
+* A dismissible note about Twinspot Pro on the Twinspot screen.
 
 = 0.4.0 =
 * Add `Api::set_ring_state` and `Api::ring_state_for_order` so add-ons can allow, block or clear a ring.

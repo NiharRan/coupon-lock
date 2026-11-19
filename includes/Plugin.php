@@ -17,6 +17,7 @@ use Twinspot_Lite\Features\CouponGuard;
 use Twinspot_Lite\Features\Importer;
 use Twinspot_Lite\Features\OrderTracker;
 use Twinspot_Lite\Features\Privacy;
+use Twinspot_Lite\Features\ProUpsell;
 use Twinspot_Lite\Rest\Activity;
 use Twinspot_Lite\Rest\Overview;
 use Twinspot_Lite\Rest\Routes;
@@ -66,6 +67,7 @@ class Plugin {
 			new Privacy( $edges, $prints, $log, $events ),
 			new Routes( new Overview( $edges, $prints, $log, $events ), new Importer( $tracker, $edges, $prints, $events ), new Activity( $events, $edges, $log ) ),
 			new Page( plugin_dir_path( $this->file ) ),
+			new ProUpsell(),
 		);
 	}
 }
