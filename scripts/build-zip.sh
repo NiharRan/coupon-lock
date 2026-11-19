@@ -1,9 +1,9 @@
 #!/bin/sh
-# Builds dist/twinspot-lite.zip containing only what WordPress.org should ship.
+# Builds dist/kestrix-coupon-guard.zip containing only what WordPress.org should ship.
 set -e
 cd "$(dirname "$0")/.."
 npm ci --silent && npm run build --silent
-rm -rf dist && mkdir -p dist/twinspot-lite
-rsync -a --exclude-from=.distignore ./ dist/twinspot-lite/
-(cd dist && zip -qr twinspot-lite.zip twinspot-lite)
-echo "dist/twinspot-lite.zip"
+rm -rf dist && mkdir -p dist/kestrix-coupon-guard
+rsync -a --exclude-from=.distignore ./ dist/kestrix-coupon-guard/
+(cd dist && zip -qr kestrix-coupon-guard.zip kestrix-coupon-guard)
+echo "dist/kestrix-coupon-guard.zip"

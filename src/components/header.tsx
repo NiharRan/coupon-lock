@@ -4,26 +4,26 @@ import { cn } from '../lib/utils';
 import type { ExtraTab, Stats, Tab } from '../types';
 
 const TABS: [ Tab, string ][] = [
-	[ 'overview', __( 'Overview', 'twinspot-lite' ) ],
-	[ 'accounts', __( 'Linked accounts', 'twinspot-lite' ) ],
-	[ 'rules', __( 'Rules', 'twinspot-lite' ) ],
-	[ 'activity', __( 'Activity', 'twinspot-lite' ) ],
-	[ 'settings', __( 'Settings', 'twinspot-lite' ) ],
+	[ 'overview', __( 'Overview', 'kestrix-coupon-guard' ) ],
+	[ 'accounts', __( 'Linked accounts', 'kestrix-coupon-guard' ) ],
+	[ 'rules', __( 'Rules', 'kestrix-coupon-guard' ) ],
+	[ 'activity', __( 'Activity', 'kestrix-coupon-guard' ) ],
+	[ 'settings', __( 'Settings', 'kestrix-coupon-guard' ) ],
 ];
 
-/** Add-on tabs from the `twinspotLite.tabs` filter, read at render time; ids that clash with built-in tabs are ignored. */
+/** Add-on tabs from the `kestrixCouponGuard.tabs` filter, read at render time; ids that clash with built-in tabs are ignored. */
 export function extraTabs(): ExtraTab[] {
-	const extras = applyFilters( 'twinspotLite.tabs', [] ) as ExtraTab[];
+	const extras = applyFilters( 'kestrixCouponGuard.tabs', [] ) as ExtraTab[];
 	return extras.filter( ( t, i ) => ! TABS.some( ( [ id ] ) => id === t.id ) && extras.findIndex( ( e ) => e.id === t.id ) === i );
 }
 
 export function Header( { tab, setTab, enabled, stats }: { tab: Tab; setTab: ( t: Tab ) => void; enabled: boolean; stats?: Stats } ) {
 	const guarding = stats && stats.coupons > 0;
-	let status: string = __( 'Guard paused', 'twinspot-lite' );
+	let status: string = __( 'Guard paused', 'kestrix-coupon-guard' );
 	if ( enabled ) {
 		status = guarding
-			? sprintf( _n( 'Guarding %d coupon', 'Guarding %d coupons', stats.coupons, 'twinspot-lite' ), stats.coupons )
-			: __( 'No coupons guarded yet', 'twinspot-lite' );
+			? sprintf( _n( 'Guarding %d coupon', 'Guarding %d coupons', stats.coupons, 'kestrix-coupon-guard' ), stats.coupons )
+			: __( 'No coupons guarded yet', 'kestrix-coupon-guard' );
 	}
 	return (
 		<div className="mb-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-2 border-b border-line">
@@ -33,10 +33,10 @@ export function Header( { tab, setTab, enabled, stats }: { tab: Tab; setTab: ( t
 						<circle cx="9.5" cy="13" r="6.5" fill="none" stroke="#132120" strokeWidth="2.2" />
 						<circle cx="16.5" cy="13" r="6.5" fill="none" stroke="#0F6E5E" strokeWidth="2.2" />
 					</svg>
-					<span className="text-[17px] font-bold tracking-[-0.02em]">Twinspot</span>
+					<span className="text-[17px] font-bold tracking-[-0.02em]">Kestrix</span>
 					{ stats && <span className="text-[12px] text-muted">{ stats.version }</span> }
 				</div>
-				<nav className="flex flex-wrap gap-x-6" aria-label={ __( 'Twinspot sections', 'twinspot-lite' ) }>
+				<nav className="flex flex-wrap gap-x-6" aria-label={ __( 'Kestrix Coupon Guard sections', 'kestrix-coupon-guard' ) }>
 					{ [ ...TABS, ...extraTabs().map( ( t ): [ Tab, string ] => [ t.id, t.label ] ) ].map( ( [ id, label ] ) => (
 						<button
 							key={ id }

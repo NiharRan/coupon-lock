@@ -12,7 +12,7 @@ import { Settings } from './screens/settings';
 import type { Filters, Overview as OverviewData, Tab } from './types';
 
 const RingDetail = lazy( () => import( './screens/ring-detail' ).then( ( m ) => ( { default: m.RingDetail } ) ) ); // Keeps the graph library out of the main bundle.
-const KEY = 'twinspot_lite_view';
+const KEY = 'kestrix_coupon_guard_view';
 const TABS: Tab[] = [ 'overview', 'accounts', 'rules', 'activity', 'settings' ];
 const known = ( id: Tab ) => TABS.includes( id ) || extraTabs().some( ( t ) => t.id === id ); // Saved ids from a deactivated add-on fall back to overview.
 
@@ -117,7 +117,7 @@ export function App() {
 			setImported( { n: done, seconds: Math.round( ( Date.now() - start ) / 100 ) / 10 } );
 			load();
 		} catch ( e ) {
-			setError( ( e as Error ).message || __( 'Import failed.', 'twinspot-lite' ) );
+			setError( ( e as Error ).message || __( 'Import failed.', 'kestrix-coupon-guard' ) );
 		}
 		locked.current = false;
 		setImporting( false );

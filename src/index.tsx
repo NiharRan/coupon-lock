@@ -3,7 +3,7 @@ import '@xyflow/react/dist/style.css'; // Here, not in the lazy chunk: PHP only 
 import './style.css';
 import { App } from './app';
 
-const root = document.getElementById( 'twinspot-root' );
+const root = document.getElementById( 'kestrix-coupon-guard-root' );
 if ( root ) {
 	createRoot( root ).render( <App /> );
 }

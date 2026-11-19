@@ -3,14 +3,14 @@
  * Dev only. Seeds a local WooCommerce site with products, "new customers only" coupons
  * and orders that form rings, then checks the coupon guard. Not shipped (see .distignore).
  *
- * Run from the WordPress root:  wp eval-file wp-content/plugins/twinspot-lite/scripts/seed-test-data.php
- * Re-running replaces the earlier seed (orders carry meta _twinspot_seed).
+ * Run from the WordPress root:  wp eval-file wp-content/plugins/kestrix-coupon-guard/scripts/seed-test-data.php
+ * Re-running replaces the earlier seed (orders carry meta _kestrix_coupon_guard_seed).
  */
 
 defined( 'ABSPATH' ) || exit;
 
-function twinspot_lite_seed() {
-	foreach ( wc_get_orders( array( 'limit' => -1, 'meta_key' => '_twinspot_seed', 'meta_value' => 1, 'status' => array_keys( wc_get_order_statuses() ) ) ) as $old ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev seed script.
+function kestrix_coupon_guard_seed() {
+	foreach ( wc_get_orders( array( 'limit' => -1, 'meta_key' => '_kestrix_coupon_guard_seed', 'meta_value' => 1, 'status' => array_keys( wc_get_order_statuses() ) ) ) as $old ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev seed script.
 		$old->delete( true );
 	}
 
@@ -30,7 +30,7 @@ function twinspot_lite_seed() {
 		$c->set_code( $code );
 		$c->set_discount_type( $type );
 		$c->set_amount( $amount );
-		$c->update_meta_data( '_twinspot_lite_first_order_only', $first );
+		$c->update_meta_data( '_kestrix_coupon_guard_first_order_only', $first );
 		$c->save();
 	}
 
@@ -65,7 +65,7 @@ function twinspot_lite_seed() {
 			$o->apply_coupon( $coupon );
 		}
 		$o->calculate_totals();
-		$o->update_meta_data( '_twinspot_seed', 1 );
+		$o->update_meta_data( '_kestrix_coupon_guard_seed', 1 );
 		$o->save();
 		$o->update_status( $status );
 	}
@@ -95,4 +95,4 @@ function twinspot_lite_seed() {
 	$check( 'missing details fail open', '', '', '', '', 'WELCOME15', true );
 }
 
-twinspot_lite_seed();
+kestrix_coupon_guard_seed();

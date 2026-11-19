@@ -7,9 +7,9 @@ import type { LinkType, RingDetail } from '../types';
 
 const HUB_ICON: Record< string, typeof AtSign > = { email: AtSign, phone: Phone, address: Home };
 const HUB_LABEL: Record< string, string > = {
-	email: __( 'Same email', 'twinspot-lite' ),
-	phone: __( 'Same phone', 'twinspot-lite' ),
-	address: __( 'Same address', 'twinspot-lite' ),
+	email: __( 'Same email', 'kestrix-coupon-guard' ),
+	phone: __( 'Same phone', 'kestrix-coupon-guard' ),
+	address: __( 'Same address', 'kestrix-coupon-guard' ),
 };
 
 const hidden = { opacity: 0, pointerEvents: 'none' as const };
@@ -104,15 +104,15 @@ function GraphView( { ring, onRefresh }: { ring: RingDetail; onRefresh: () => Pr
 		<div ref={ box } className={ full ? 'flex h-full flex-col bg-white p-6' : '' }>
 			<div className="mb-3 flex items-start justify-between">
 				<div>
-					<h2 className="flex items-center gap-1 text-[20px] font-semibold leading-7 text-ink"><Network size={ 20 } className="text-primary" />{ __( 'Connection map', 'twinspot-lite' ) }</h2>
-					<p className="mt-0.5 text-[13px] leading-[18px] text-muted">{ sprintf( __( 'How these %d orders and customer identifiers intersect', 'twinspot-lite' ), ring.size ) }</p>
+					<h2 className="flex items-center gap-1 text-[20px] font-semibold leading-7 text-ink"><Network size={ 20 } className="text-primary" />{ __( 'Connection map', 'kestrix-coupon-guard' ) }</h2>
+					<p className="mt-0.5 text-[13px] leading-[18px] text-muted">{ sprintf( __( 'How these %d orders and customer identifiers intersect', 'kestrix-coupon-guard' ), ring.size ) }</p>
 				</div>
 				<div className="flex items-center gap-1 rounded-lg bg-info p-1">
-					<button type="button" className={ tool } title={ __( 'Refresh', 'twinspot-lite' ) } aria-label={ __( 'Refresh', 'twinspot-lite' ) } onClick={ refresh } disabled={ refreshing }><RefreshCw size={ 18 } className={ refreshing ? 'animate-spin' : '' } /></button>
-					<button type="button" className={ tool } title={ full ? __( 'Exit full screen', 'twinspot-lite' ) : __( 'Full screen', 'twinspot-lite' ) } aria-label={ full ? __( 'Exit full screen', 'twinspot-lite' ) : __( 'Full screen', 'twinspot-lite' ) } onClick={ toggleFull }>{ full ? <Minimize size={ 18 } /> : <Maximize size={ 18 } /> }</button>
+					<button type="button" className={ tool } title={ __( 'Refresh', 'kestrix-coupon-guard' ) } aria-label={ __( 'Refresh', 'kestrix-coupon-guard' ) } onClick={ refresh } disabled={ refreshing }><RefreshCw size={ 18 } className={ refreshing ? 'animate-spin' : '' } /></button>
+					<button type="button" className={ tool } title={ full ? __( 'Exit full screen', 'kestrix-coupon-guard' ) : __( 'Full screen', 'kestrix-coupon-guard' ) } aria-label={ full ? __( 'Exit full screen', 'kestrix-coupon-guard' ) : __( 'Full screen', 'kestrix-coupon-guard' ) } onClick={ toggleFull }>{ full ? <Minimize size={ 18 } /> : <Maximize size={ 18 } /> }</button>
 				</div>
 			</div>
-			<div className={ `overflow-hidden rounded-xl bg-canvas ${ full ? 'min-h-0 flex-1' : 'h-[520px]' }` } role="img" aria-label={ __( 'Graph of orders and the details they share', 'twinspot-lite' ) }>
+			<div className={ `overflow-hidden rounded-xl bg-canvas ${ full ? 'min-h-0 flex-1' : 'h-[520px]' }` } role="img" aria-label={ __( 'Graph of orders and the details they share', 'kestrix-coupon-guard' ) }>
 				<ReactFlow nodes={ nodes } edges={ edges } nodeTypes={ nodeTypes } onNodesChange={ onNodesChange } nodesConnectable={ false } fitView proOptions={ { hideAttribution: true } } minZoom={ 0.3 } style={ { background: 'transparent' } }>
 					<Background gap={ 20 } size={ 1.5 } color="#94A3B8" style={ { opacity: 0.4 } } />
 				</ReactFlow>

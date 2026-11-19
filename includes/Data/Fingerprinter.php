@@ -2,17 +2,17 @@
 /**
  * Turns raw customer details into keyed hashes. Owns the per-site secret.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Data;
+namespace Kestrix_Coupon_Guard\Data;
 
-use Twinspot_Lite\Core\Normalize;
+use Kestrix_Coupon_Guard\Core\Normalize;
 
 defined( 'ABSPATH' ) || exit;
 
 class Fingerprinter {
-	const OPTION = 'twinspot_lite_secret';
+	const OPTION = 'kestrix_coupon_guard_secret';
 
 	public function install(): void {
 		if ( ! get_option( self::OPTION ) ) {

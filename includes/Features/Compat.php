@@ -2,12 +2,12 @@
 /**
  * Declares HPOS and Cart/Checkout Blocks compatibility.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Features;
+namespace Kestrix_Coupon_Guard\Features;
 
-use Twinspot_Lite\Module;
+use Kestrix_Coupon_Guard\Module;
 
 defined( 'ABSPATH' ) || exit;
 

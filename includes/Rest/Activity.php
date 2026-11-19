@@ -2,16 +2,16 @@
 /**
  * Builds the data for the Activity Log screen and its CSV export. No request handling here.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Rest;
+namespace Kestrix_Coupon_Guard\Rest;
 
-use Twinspot_Lite\Core\Csv;
-use Twinspot_Lite\Core\Rings;
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
+use Kestrix_Coupon_Guard\Core\Csv;
+use Kestrix_Coupon_Guard\Core\Rings;
+use Kestrix_Coupon_Guard\Data\BlockLog;
+use Kestrix_Coupon_Guard\Data\Edges;
+use Kestrix_Coupon_Guard\Data\Events;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -84,7 +84,7 @@ class Activity {
 			);
 		}
 		return array(
-			'filename' => 'twinspot-activity-' . gmdate( 'Y-m-d' ) . '.csv',
+			'filename' => 'kestrix-coupon-guard-activity-' . gmdate( 'Y-m-d' ) . '.csv',
 			'csv'      => $csv,
 		);
 	}

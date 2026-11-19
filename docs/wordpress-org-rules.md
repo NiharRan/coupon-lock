@@ -3,7 +3,7 @@
 Source: developer.wordpress.org/plugins, read 2026-11-05. Recheck the guidelines before each submission.
 
 - GPLv2-or-later; license in both header and readme and they must match. No obfuscated code. Ship readable source.
-- Main file name = folder = slug (`twinspot-lite`). `Stable tag` in readme.txt must equal `Version` in the main file; never `trunk`. Bump the version every release.
+- Main file name = folder = slug (`kestrix-coupon-guard`). `Stable tag` in readme.txt must equal `Version` in the main file; never `trunk`. Bump the version every release.
 - Prefix every function, class, constant, option, meta key and global with 4+ characters. No names starting with `__`, `wp_` or a single `_`.
 - Security: sanitize input, validate, escape late (`esc_html`, `esc_attr`, `esc_url`), nonces and `current_user_can` on admin actions, `$wpdb->prepare()` on all queries. Never process whole `$_POST`. `isset` plus `sanitize_text_field( wp_unslash( ... ) )` before use. No HEREDOC or short tags. Direct-access guard in every PHP file that runs code.
 - No locked features or trialware in the plugin code (guideline 5). Paid value must be real server-side functionality or a separate add-on hosted outside WordPress.org.

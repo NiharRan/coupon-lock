@@ -37,11 +37,11 @@ Tested so far: `php tests/core-test.php`, `tests/wc-test.php` (WP-CLI, real WooC
 ## Behaviour to revisit
 
 - Block and hold are mutually exclusive. If merchants want both (block known rings, hold the rest), the settings model needs a third state.
-- Hold only applies to coupons with "New customers only (Twinspot)" ticked. Orders without such a coupon are never held.
+- Hold only applies to coupons with "New customers only (Kestrix Coupon Guard)" ticked. Orders without such a coupon are never held.
 - Admin-blocked rings refuse every coupon in both block and hold mode. Only the shield being fully off (both toggles off) disables them.
-- A gateway that calls `update_status('processing')` directly is reverted to on-hold (non-admin move to processing or completed on a `_twinspot_lite_held` order). Verified in a browser with COD (gateway completes it, the plugin puts it back on hold). Cancelled, failed and refunded moves are allowed. Auto-complete plugins are reverted too; integrators can opt out with the `twinspot_lite_keep_held` filter.
+- A gateway that calls `update_status('processing')` directly is reverted to on-hold (non-admin move to processing or completed on a `_kestrix_coupon_guard_held` order). Verified in a browser with COD (gateway completes it, the plugin puts it back on hold). Cancelled, failed and refunded moves are allowed. Auto-complete plugins are reverted too; integrators can opt out with the `kestrix_coupon_guard_keep_held` filter.
 - Hold checks matches at order creation only, not when an order later reaches processing or completed.
-- A held order is released when a user with `edit_shop_orders` changes its status away from on-hold; this clears `_twinspot_lite_held`, so later payment webhooks do not hold it again.
+- A held order is released when a user with `edit_shop_orders` changes its status away from on-hold; this clears `_kestrix_coupon_guard_held`, so later payment webhooks do not hold it again.
 
 ## Roadmap items not started
 

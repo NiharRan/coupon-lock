@@ -2,16 +2,16 @@
 /**
  * Dev only. Integration test against a real WooCommerce site. Not shipped (see .distignore).
  *
- * Run from the WordPress root:  wp eval-file wp-content/plugins/twinspot-lite/tests/wc-test.php
- * Creates products, coupons and orders (orders tagged _twinspot_test) and deletes them at the end. Existing orders, rules and the two shield settings are left as they were. Still best run on a dev site.
+ * Run from the WordPress root:  wp eval-file wp-content/plugins/kestrix-coupon-guard/tests/wc-test.php
+ * Creates products, coupons and orders (orders tagged _kestrix_coupon_guard_test) and deletes them at the end. Existing orders, rules and the two shield settings are left as they were. Still best run on a dev site.
  * Exit code is 1 if any check fails.
  */
 
 defined( 'ABSPATH' ) || exit;
 
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Fingerprinter;
+use Kestrix_Coupon_Guard\Data\BlockLog;
+use Kestrix_Coupon_Guard\Data\Edges;
+use Kestrix_Coupon_Guard\Data\Fingerprinter;
 
 $GLOBALS['ts_fail'] = 0;
 
@@ -30,7 +30,7 @@ function ts_order( $email, $phone, $line1, $postcode, $coupon = '', $status = 'p
 	$o->set_billing_phone( $phone );
 	$o->set_billing_address_1( $line1 );
 	$o->set_billing_postcode( $postcode );
-	$o->update_meta_data( '_twinspot_test', '1' );
+	$o->update_meta_data( '_kestrix_coupon_guard_test', '1' );
 	if ( $coupon ) {
 		$o->apply_coupon( $coupon );
 	}
@@ -65,23 +65,23 @@ function ts_apply( $code, $email, $phone = '', $line1 = '', $postcode = '' ) {
 
 /** Delete only what this script created. Deleting an order also drops its index row (woocommerce_delete_order), so real data is untouched. */
 function ts_clean() {
-	foreach ( wc_get_orders( array( 'limit' => -1, 'status' => array_keys( wc_get_order_statuses() ), 'meta_key' => '_twinspot_test', 'meta_value' => '1' ) ) as $o ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev test.
+	foreach ( wc_get_orders( array( 'limit' => -1, 'status' => array_keys( wc_get_order_statuses() ), 'meta_key' => '_kestrix_coupon_guard_test', 'meta_value' => '1' ) ) as $o ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev test.
 		$o->delete( true );
 	}
-	update_option( 'twinspot_lite_enabled', 'yes' );
-	update_option( 'twinspot_lite_hold_orders', 'no' );
+	update_option( 'kestrix_coupon_guard_enabled', 'yes' );
+	update_option( 'kestrix_coupon_guard_hold_orders', 'no' );
 }
 
 // ---------------------------------------------------------------- setup
 echo "Setup\n";
 wp_set_current_user( 0 );
-ts_check( class_exists( 'WooCommerce' ) && class_exists( 'Twinspot_Lite\Plugin' ), 'WooCommerce and Twinspot Lite are active' );
+ts_check( class_exists( 'WooCommerce' ) && class_exists( 'Kestrix_Coupon_Guard\Plugin' ), 'WooCommerce and Kestrix Coupon Guard are active' );
 global $wpdb;
 $edges = new Edges();
 ts_check( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $edges->table() ) ) === $edges->table(), 'edges table exists' );
-ts_check( (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'twinspot_lite_events' ) ), 'events table exists' );
+ts_check( (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'kestrix_coupon_guard_events' ) ), 'events table exists' );
 
-$ts_saved = array( get_option( 'twinspot_lite_enabled' ), get_option( 'twinspot_lite_hold_orders' ) ); // Restored at the end.
+$ts_saved = array( get_option( 'kestrix_coupon_guard_enabled' ), get_option( 'kestrix_coupon_guard_hold_orders' ) ); // Restored at the end.
 ts_clean();
 $GLOBALS['ts_product'] = $ts_product = new WC_Product_Simple();
 $ts_product->set_name( 'TS Test Product' );
@@ -94,7 +94,7 @@ foreach ( array( 'TSFIRST' => 'yes', 'TSOPEN' => 'no' ) as $code => $first ) {
 	$c->set_code( $code );
 	$c->set_discount_type( 'fixed_cart' );
 	$c->set_amount( 10 );
-	$c->update_meta_data( '_twinspot_lite_first_order_only', $first );
+	$c->update_meta_data( '_kestrix_coupon_guard_first_order_only', $first );
 	$c->save();
 }
 
@@ -106,7 +106,7 @@ $b = ts_order( 'janedoe+promo@gmail.com', '', '', '' );
 $notes = wc_get_order_notes( array( 'order_id' => $b->get_id() ) );
 ts_check( (bool) array_filter( $notes, function ( $n ) use ( $a ) { return false !== strpos( $n->content, '#' . $a->get_id() ); } ), 'gmail dot and +tag alias links to earlier order (note added)' );
 $lone = ts_order( 'someone.else@example.com', '555-999-0000', '9 Other Rd', '99999' );
-ts_check( ! array_filter( wc_get_order_notes( array( 'order_id' => $lone->get_id() ) ), function ( $n ) { return false !== strpos( $n->content, 'Twinspot' ); } ), 'unrelated shopper gets no ring note' );
+ts_check( ! array_filter( wc_get_order_notes( array( 'order_id' => $lone->get_id() ) ), function ( $n ) { return false !== strpos( $n->content, 'Kestrix Coupon Guard' ); } ), 'unrelated shopper gets no ring note' );
 
 // ---------------------------------------------------------------- block mode
 echo "Block mode\n";
@@ -120,10 +120,10 @@ list( $ok ) = ts_apply( 'TSFIRST', '' );
 ts_check( $ok, 'fails open with no billing details' );
 list( $ok ) = ts_apply( 'TSFIRST', 'x@example.com', '555-100-2000' ); // Same phone as first order.
 ts_check( ! $ok, 'phone match refused' );
-update_option( 'twinspot_lite_enabled', 'no' );
+update_option( 'kestrix_coupon_guard_enabled', 'no' );
 list( $ok ) = ts_apply( 'TSFIRST', 'jane.doe@gmail.com' );
 ts_check( $ok, 'shield off: repeat shopper accepted' );
-update_option( 'twinspot_lite_enabled', 'yes' );
+update_option( 'kestrix_coupon_guard_enabled', 'yes' );
 
 // Whitelist.
 $fp = new Fingerprinter();
@@ -135,23 +135,23 @@ ts_check( $ok, 'allowed ring skips the guard' );
 
 // ---------------------------------------------------------------- hold mode
 echo "Hold mode\n";
-update_option( 'twinspot_lite_enabled', 'no' );
-update_option( 'twinspot_lite_hold_orders', 'yes' );
+update_option( 'kestrix_coupon_guard_enabled', 'no' );
+update_option( 'kestrix_coupon_guard_hold_orders', 'yes' );
 list( $ok ) = ts_apply( 'TSFIRST', 'jane.doe@gmail.com' );
 ts_check( $ok, 'hold mode does not refuse the coupon' );
 
 $h1 = ts_order( 'jane.doe@gmail.com', '', '', '', 'TSFIRST' );
-ts_check( 'on-hold' === $h1->get_status() && $h1->get_meta( '_twinspot_lite_held' ), 'repeat shopper order lands on-hold and flagged' );
+ts_check( 'on-hold' === $h1->get_status() && $h1->get_meta( '_kestrix_coupon_guard_held' ), 'repeat shopper order lands on-hold and flagged' );
 $h1->payment_complete();
 $h1 = wc_get_order( $h1->get_id() );
 ts_check( 'on-hold' === $h1->get_status(), 'payment_complete() keeps it on-hold' );
 $h1->update_status( 'processing' );
 $h1 = wc_get_order( $h1->get_id() );
 ts_check( 'on-hold' === $h1->get_status(), 'direct update_status(processing) with no user is reverted' );
-add_filter( 'twinspot_lite_keep_held', '__return_false' );
+add_filter( 'kestrix_coupon_guard_keep_held', '__return_false' );
 $h1->update_status( 'processing' );
-ts_check( 'processing' === wc_get_order( $h1->get_id() )->get_status(), 'twinspot_lite_keep_held filter lets it through' );
-remove_filter( 'twinspot_lite_keep_held', '__return_false' );
+ts_check( 'processing' === wc_get_order( $h1->get_id() )->get_status(), 'kestrix_coupon_guard_keep_held filter lets it through' );
+remove_filter( 'kestrix_coupon_guard_keep_held', '__return_false' );
 
 $h2 = ts_order( 'janedoe@gmail.com', '', '', '', 'TSFIRST' );
 ts_check( 'on-hold' === $h2->get_status(), 'second held order' );
@@ -159,17 +159,17 @@ $admin = get_users( array( 'role' => 'administrator', 'number' => 1 ) )[0];
 wp_set_current_user( $admin->ID );
 $h2->update_status( 'processing' );
 $h2 = wc_get_order( $h2->get_id() );
-ts_check( 'processing' === $h2->get_status() && ! $h2->get_meta( '_twinspot_lite_held' ), 'admin release works and clears the flag' );
+ts_check( 'processing' === $h2->get_status() && ! $h2->get_meta( '_kestrix_coupon_guard_held' ), 'admin release works and clears the flag' );
 wp_set_current_user( 0 );
 
 $ok1 = ts_order( 'fresh.person@example.com', '555-777-8888', '3 Fresh Ln', '33333', 'TSFIRST' );
 ts_check( 'on-hold' !== $ok1->get_status(), 'new shopper is not held' );
 $ok2 = ts_order( 'jane.doe@gmail.com', '', '', '', 'TSOPEN' );
 ts_check( 'on-hold' !== $ok2->get_status(), 'repeat shopper with unrestricted coupon is not held' );
-add_filter( 'twinspot_lite_hold_order', '__return_false' );
+add_filter( 'kestrix_coupon_guard_hold_order', '__return_false' );
 $ok3 = ts_order( 'jane.doe@gmail.com', '', '', '', 'TSFIRST' );
-remove_filter( 'twinspot_lite_hold_order', '__return_false' );
-ts_check( 'on-hold' !== $ok3->get_status(), 'twinspot_lite_hold_order filter skips the hold' );
+remove_filter( 'kestrix_coupon_guard_hold_order', '__return_false' );
+ts_check( 'on-hold' !== $ok3->get_status(), 'kestrix_coupon_guard_hold_order filter skips the hold' );
 
 // ---------------------------------------------------------------- cleanup of index
 echo "Index upkeep\n";
@@ -195,82 +195,82 @@ $rc = ts_order( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' );
 $rd = ts_order( 'rd@example.com', '555-777-8888', '88 Lone Ave', '88888' );
 $want = array( $ra->get_id(), $rb->get_id(), $rc->get_id() );
 sort( $want );
-$got = \Twinspot_Lite\Api::ring_orders_for_order( $ra->get_id() );
+$got = \Kestrix_Coupon_Guard\Api::ring_orders_for_order( $ra->get_id() );
 sort( $got );
 ts_check( $want === $got, 'Api: ring_orders_for_order returns the multi-hop ring' );
-$got = \Twinspot_Lite\Api::ring_orders_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' );
+$got = \Kestrix_Coupon_Guard\Api::ring_orders_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' );
 sort( $got );
 ts_check( $want === $got, 'Api: ring_orders_for_details matches the same ring' );
-ts_check( array() === \Twinspot_Lite\Api::ring_orders_for_details( 'nobody@example.com', '555-000-1111', '1 Nowhere Ln', '00001' ), 'Api: lone order has no ring (details)' );
-ts_check( array( $rd->get_id() ) === \Twinspot_Lite\Api::ring_orders_for_details( 'rd@example.com', '555-777-8888', '88 Lone Ave', '88888' ), 'Api: details matching a single earlier order return just that id' );
-ts_check( array() === \Twinspot_Lite\Api::ring_orders_for_order( $rd->get_id() ), 'Api: lone order has no ring (order)' );
-ts_check( array() === \Twinspot_Lite\Api::ring_orders_for_details( '', '', '', '' ), 'Api: empty details match nothing' );
-ts_check( 2 === count( \Twinspot_Lite\Api::ring_orders_for_order( $ra->get_id(), 2 ) ), 'Api: limit caps the ring' );
-$got = \Twinspot_Lite\Api::component( array( $ra->get_id(), $rd->get_id() ) );
+ts_check( array() === \Kestrix_Coupon_Guard\Api::ring_orders_for_details( 'nobody@example.com', '555-000-1111', '1 Nowhere Ln', '00001' ), 'Api: lone order has no ring (details)' );
+ts_check( array( $rd->get_id() ) === \Kestrix_Coupon_Guard\Api::ring_orders_for_details( 'rd@example.com', '555-777-8888', '88 Lone Ave', '88888' ), 'Api: details matching a single earlier order return just that id' );
+ts_check( array() === \Kestrix_Coupon_Guard\Api::ring_orders_for_order( $rd->get_id() ), 'Api: lone order has no ring (order)' );
+ts_check( array() === \Kestrix_Coupon_Guard\Api::ring_orders_for_details( '', '', '', '' ), 'Api: empty details match nothing' );
+ts_check( 2 === count( \Kestrix_Coupon_Guard\Api::ring_orders_for_order( $ra->get_id(), 2 ) ), 'Api: limit caps the ring' );
+$got = \Kestrix_Coupon_Guard\Api::component( array( $ra->get_id(), $rd->get_id() ) );
 $exp = array_merge( $want, array( $rd->get_id() ) );
 sort( $got );
 sort( $exp );
 ts_check( $exp === $got, 'Api: component merges rings of several seeds, lone seed kept' );
-ts_check( array() === \Twinspot_Lite\Api::component( array() ), 'Api: component of nothing is empty' );
-$rows = \Twinspot_Lite\Api::edge_rows( array( $ra->get_id(), 1999999999 ) );
+ts_check( array() === \Kestrix_Coupon_Guard\Api::component( array() ), 'Api: component of nothing is empty' );
+$rows = \Kestrix_Coupon_Guard\Api::edge_rows( array( $ra->get_id(), 1999999999 ) );
 ts_check( array( $ra->get_id() ) === array_keys( $rows ) && array( 'email_h', 'phone_h', 'addr_h' ) === array_keys( $rows[ $ra->get_id() ] ), 'Api: edge_rows returns the three hashes, skips unknown orders' );
-add_filter( 'twinspot_lite_ring_detail', function ( $d ) {
+add_filter( 'kestrix_coupon_guard_ring_detail', function ( $d ) {
 	$d['hubs'][] = array( 'id' => 'x1', 'type' => 'device', 'label' => 'Same device', 'count' => 2, 'top' => false );
 	return $d;
 } );
-$detail = ( new \Twinspot_Lite\Rest\Overview( $edges, new Fingerprinter(), new BlockLog(), new \Twinspot_Lite\Data\Events() ) )->detail( $ra->get_id() );
+$detail = ( new \Kestrix_Coupon_Guard\Rest\Overview( $edges, new Fingerprinter(), new BlockLog(), new \Kestrix_Coupon_Guard\Data\Events() ) )->detail( $ra->get_id() );
 ts_check( $detail && 'x1' === end( $detail['hubs'] )['id'], 'Api: ring detail filter can append hubs' );
-remove_all_filters( 'twinspot_lite_ring_detail' );
-ts_check( array() === \Twinspot_Lite\Api::ring_orders_for_order( 1999999999 ), 'Api: unknown order has no ring' );
-ts_check( ! \Twinspot_Lite\Api::is_ring_allowed_for_order( $ra->get_id() ) && ! \Twinspot_Lite\Api::is_ring_allowed_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' ), 'Api: ring not allowed by default' );
+remove_all_filters( 'kestrix_coupon_guard_ring_detail' );
+ts_check( array() === \Kestrix_Coupon_Guard\Api::ring_orders_for_order( 1999999999 ), 'Api: unknown order has no ring' );
+ts_check( ! \Kestrix_Coupon_Guard\Api::is_ring_allowed_for_order( $ra->get_id() ) && ! \Kestrix_Coupon_Guard\Api::is_ring_allowed_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' ), 'Api: ring not allowed by default' );
 $rh = array();
 foreach ( $want as $rid ) { // Like the Rings screen: store every hash of the ring.
 	$rh = array_merge( $rh, array( $edges->row( $rid )['email_h'], $edges->row( $rid )['phone_h'], $edges->row( $rid )['addr_h'] ) );
 }
 ( new BlockLog() )->set_ring_allowed( 1, array_values( array_filter( $rh ) ), true );
-ts_check( \Twinspot_Lite\Api::is_ring_allowed_for_order( $ra->get_id() ) && \Twinspot_Lite\Api::is_ring_allowed_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' ), 'Api: allowed ring reported for order and details' );
+ts_check( \Kestrix_Coupon_Guard\Api::is_ring_allowed_for_order( $ra->get_id() ) && \Kestrix_Coupon_Guard\Api::is_ring_allowed_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' ), 'Api: allowed ring reported for order and details' );
 ( new BlockLog() )->set_ring_allowed( 1, array_values( array_filter( $rh ) ), false );
-\Twinspot_Lite\Api::hold_order( $rd, 'Test hold' );
+\Kestrix_Coupon_Guard\Api::hold_order( $rd, 'Test hold' );
 $rd = wc_get_order( $rd->get_id() );
-ts_check( 'on-hold' === $rd->get_status() && '1' === (string) $rd->get_meta( '_twinspot_lite_held' ), 'Api: hold_order puts the order on hold with the meta' );
+ts_check( 'on-hold' === $rd->get_status() && '1' === (string) $rd->get_meta( '_kestrix_coupon_guard_held' ), 'Api: hold_order puts the order on hold with the meta' );
 ts_clean();
 
 // ---------------------------------------------------------------- privacy and REST
 echo "Privacy and REST\n";
 $ex = apply_filters( 'wp_privacy_personal_data_exporters', array() );
 $er = apply_filters( 'wp_privacy_personal_data_erasers', array() );
-ts_check( isset( $ex['twinspot-lite'] ) || (bool) array_filter( array_keys( $ex ), function ( $k ) { return 0 === strpos( $k, 'twinspot' ); } ), 'privacy exporter registered' );
-ts_check( (bool) array_filter( array_keys( $er ), function ( $k ) { return 0 === strpos( $k, 'twinspot' ); } ), 'privacy eraser registered' );
+ts_check( isset( $ex['kestrix-coupon-guard'] ) || (bool) array_filter( array_keys( $ex ), function ( $k ) { return 0 === strpos( $k, 'kestrix' ); } ), 'privacy exporter registered' );
+ts_check( (bool) array_filter( array_keys( $er ), function ( $k ) { return 0 === strpos( $k, 'kestrix' ); } ), 'privacy eraser registered' );
 wp_set_current_user( $admin->ID );
 foreach ( array( 'overview', 'activity' ) as $route ) {
-	$res = rest_do_request( new WP_REST_Request( 'GET', '/twinspot-lite/v1/' . $route ) );
+	$res = rest_do_request( new WP_REST_Request( 'GET', '/kestrix-coupon-guard/v1/' . $route ) );
 	ts_check( 200 === $res->get_status(), "REST /$route returns 200 for admin" );
 }
 wp_set_current_user( 0 );
-$res = rest_do_request( new WP_REST_Request( 'GET', '/twinspot-lite/v1/overview' ) );
+$res = rest_do_request( new WP_REST_Request( 'GET', '/kestrix-coupon-guard/v1/overview' ) );
 ts_check( in_array( $res->get_status(), array( 401, 403 ), true ), 'REST refuses anonymous users' );
 
 // ---------------------------------------------------------------- ring state api
 echo "Api ring state\n";
 ts_clean();
 $solo = ts_order( 'solo.state@example.com', '555-410-0001', '1 Solo St', '41001' );
-ts_check( null === \Twinspot_Lite\Api::set_ring_state( $solo->get_id(), 'allow' ), 'Api: set_ring_state is null for an order in no ring' );
-ts_check( 'none' === \Twinspot_Lite\Api::ring_state_for_order( $solo->get_id() ), 'Api: ring_state_for_order is none for an order in no ring' );
+ts_check( null === \Kestrix_Coupon_Guard\Api::set_ring_state( $solo->get_id(), 'allow' ), 'Api: set_ring_state is null for an order in no ring' );
+ts_check( 'none' === \Kestrix_Coupon_Guard\Api::ring_state_for_order( $solo->get_id() ), 'Api: ring_state_for_order is none for an order in no ring' );
 $sa = ts_order( 'same.state@example.com', '555-410-0002', '2 Ring St', '41002' );
 $sb = ts_order( 'same.state@example.com', '555-410-0003', '3 Other St', '41003' );
 $sid = $sa->get_id();
-ts_check( 'allowed' === \Twinspot_Lite\Api::set_ring_state( $sid, 'allow' ), 'Api: allow returns allowed' );
-ts_check( 'allowed' === \Twinspot_Lite\Api::ring_state_for_order( $sb->get_id() ), 'Api: ring_state_for_order agrees (allowed)' );
-ts_check( 'blocked' === \Twinspot_Lite\Api::set_ring_state( $sid, 'block' ), 'Api: block returns blocked' );
-ts_check( 'blocked' === \Twinspot_Lite\Api::ring_state_for_order( $sid ) && ! \Twinspot_Lite\Api::is_ring_allowed_for_order( $sid ), 'Api: blocked ring is no longer allowed' );
-ts_check( null === \Twinspot_Lite\Api::set_ring_state( $sid, 'bogus' ), 'Api: unknown state returns null' );
-ts_check( 'none' === \Twinspot_Lite\Api::set_ring_state( $sid, 'clear' ), 'Api: clear returns none' );
-ts_check( 'none' === \Twinspot_Lite\Api::ring_state_for_order( $sid ), 'Api: ring_state_for_order agrees (none)' );
+ts_check( 'allowed' === \Kestrix_Coupon_Guard\Api::set_ring_state( $sid, 'allow' ), 'Api: allow returns allowed' );
+ts_check( 'allowed' === \Kestrix_Coupon_Guard\Api::ring_state_for_order( $sb->get_id() ), 'Api: ring_state_for_order agrees (allowed)' );
+ts_check( 'blocked' === \Kestrix_Coupon_Guard\Api::set_ring_state( $sid, 'block' ), 'Api: block returns blocked' );
+ts_check( 'blocked' === \Kestrix_Coupon_Guard\Api::ring_state_for_order( $sid ) && ! \Kestrix_Coupon_Guard\Api::is_ring_allowed_for_order( $sid ), 'Api: blocked ring is no longer allowed' );
+ts_check( null === \Kestrix_Coupon_Guard\Api::set_ring_state( $sid, 'bogus' ), 'Api: unknown state returns null' );
+ts_check( 'none' === \Kestrix_Coupon_Guard\Api::set_ring_state( $sid, 'clear' ), 'Api: clear returns none' );
+ts_check( 'none' === \Kestrix_Coupon_Guard\Api::ring_state_for_order( $sid ), 'Api: ring_state_for_order agrees (none)' );
 
 // ---------------------------------------------------------------- done
 ts_clean();
-update_option( 'twinspot_lite_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
-update_option( 'twinspot_lite_hold_orders', $ts_saved[1] ? $ts_saved[1] : 'no' );
+update_option( 'kestrix_coupon_guard_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
+update_option( 'kestrix_coupon_guard_hold_orders', $ts_saved[1] ? $ts_saved[1] : 'no' );
 $ts_product->delete( true );
 foreach ( array( 'TSFIRST', 'TSOPEN' ) as $code ) {
 	wp_delete_post( wc_get_coupon_id_by_code( $code ), true );

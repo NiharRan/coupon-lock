@@ -2,10 +2,10 @@
 /**
  * A feature of the plugin. To add one: implement this, list it in Plugin::modules().
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite;
+namespace Kestrix_Coupon_Guard;
 
 defined( 'ABSPATH' ) || exit;
 

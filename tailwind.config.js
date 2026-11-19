@@ -1,6 +1,6 @@
-/** Scoped to #twinspot-root and no preflight, so wp-admin styles are never touched. */
+/** Scoped to #kestrix-coupon-guard-root and no preflight, so wp-admin styles are never touched. */
 module.exports = {
-	important: '#twinspot-root',
+	important: '#kestrix-coupon-guard-root',
 	corePlugins: { preflight: false },
 	content: [ './src/**/*.{js,jsx,ts,tsx}' ],
 	theme: {

@@ -1,6 +1,6 @@
 {
-  "name": "twinspot/twinspot-lite",
-  "description": "Dev tooling for Twinspot Lite (static analysis only).",
+  "name": "kestrix/kestrix-coupon-guard",
+  "description": "Dev tooling for Kestrix Coupon Guard (static analysis only).",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "require-dev": {

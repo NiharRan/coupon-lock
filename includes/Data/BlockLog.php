@@ -2,18 +2,18 @@
 /**
  * Blocked coupon attempts (daily count for 30 days, last 200 events), manually blocked rings and allowed (whitelisted) rings.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Data;
+namespace Kestrix_Coupon_Guard\Data;
 
 defined( 'ABSPATH' ) || exit;
 
 class BlockLog {
-	const OPTION  = 'twinspot_lite_blocked';
-	const EVENTS  = 'twinspot_lite_block_events';
-	const RINGS   = 'twinspot_lite_blocked_rings';
-	const ALLOWED = 'twinspot_lite_allowed_rings';
+	const OPTION  = 'kestrix_coupon_guard_blocked';
+	const EVENTS  = 'kestrix_coupon_guard_block_events';
+	const RINGS   = 'kestrix_coupon_guard_blocked_rings';
+	const ALLOWED = 'kestrix_coupon_guard_allowed_rings';
 
 	/**
 	 * @param int[] $order_ids Earlier orders the shopper matched.

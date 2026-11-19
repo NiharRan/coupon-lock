@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Twinspot Lite">
-	<file>twinspot-lite.php</file>
+<ruleset name="Kestrix Coupon Guard">
+	<file>kestrix-coupon-guard.php</file>
 	<file>uninstall.php</file>
 	<file>includes</file>
 	<arg name="extensions" value="php"/>
@@ -19,9 +19,9 @@
 		<properties><property name="custom_capabilities" type="array"><element value="manage_woocommerce"/><element value="edit_shop_orders"/></property></properties>
 	</rule>
 	<rule ref="WordPress.WP.I18n">
-		<properties><property name="text_domain" type="array"><element value="twinspot-lite"/></property></properties>
+		<properties><property name="text_domain" type="array"><element value="kestrix-coupon-guard"/></property></properties>
 	</rule>
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
-		<properties><property name="prefixes" type="array"><element value="twinspot_lite"/><element value="Twinspot_Lite"/></property></properties>
+		<properties><property name="prefixes" type="array"><element value="kestrix_coupon_guard"/><element value="Kestrix_Coupon_Guard"/></property></properties>
 	</rule>
 </ruleset>

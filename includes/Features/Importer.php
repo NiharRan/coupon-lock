@@ -2,15 +2,15 @@
 /**
  * Indexes past orders. Not a hook module: used by the REST import route.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Features;
+namespace Kestrix_Coupon_Guard\Features;
 
-use Twinspot_Lite\Core\Rings;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
+use Kestrix_Coupon_Guard\Core\Rings;
+use Kestrix_Coupon_Guard\Data\Edges;
+use Kestrix_Coupon_Guard\Data\Events;
+use Kestrix_Coupon_Guard\Data\Fingerprinter;
 
 defined( 'ABSPATH' ) || exit;
 

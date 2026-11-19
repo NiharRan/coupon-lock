@@ -18,14 +18,14 @@
 @tailwind utilities;
 
 /* Minimal base, scoped to our root, in place of Tailwind's preflight. */
-#twinspot-root,
-#twinspot-root *,
-#twinspot-root *::before,
-#twinspot-root *::after {
+#kestrix-coupon-guard-root,
+#kestrix-coupon-guard-root *,
+#kestrix-coupon-guard-root *::before,
+#kestrix-coupon-guard-root *::after {
 	box-sizing: border-box;
 	border: 0 solid #dce2df;
 }
-#twinspot-root {
+#kestrix-coupon-guard-root {
 	font-family: 'Schibsted Grotesk Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 	font-size: 14px;
 	line-height: 21px;
@@ -33,36 +33,36 @@
 	font-variant-numeric: tabular-nums;
 	margin: 20px 20px 0 0;
 }
-#twinspot-root h1,
-#twinspot-root h2,
-#twinspot-root h3,
-#twinspot-root p {
+#kestrix-coupon-guard-root h1,
+#kestrix-coupon-guard-root h2,
+#kestrix-coupon-guard-root h3,
+#kestrix-coupon-guard-root p {
 	margin: 0;
 	padding: 0;
 }
-#twinspot-root button,
-#twinspot-root input,
-#twinspot-root select {
+#kestrix-coupon-guard-root button,
+#kestrix-coupon-guard-root input,
+#kestrix-coupon-guard-root select {
 	font: inherit;
 	color: inherit;
 	margin: 0;
 }
-#twinspot-root button {
+#kestrix-coupon-guard-root button {
 	cursor: pointer;
 	background: none;
 }
-#twinspot-root a {
+#kestrix-coupon-guard-root a {
 	text-decoration: none;
 }
-#twinspot-root svg {
+#kestrix-coupon-guard-root svg {
 	display: block;
 	flex-shrink: 0;
 }
-#twinspot-root table {
+#kestrix-coupon-guard-root table {
 	border-collapse: collapse;
 	width: 100%;
 }
-#twinspot-root .tabular {
+#kestrix-coupon-guard-root .tabular {
 	font-variant-numeric: tabular-nums;
 }
 
@@ -71,8 +71,8 @@
 @keyframes ts-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
 @keyframes ts-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ts-fade-out { from { opacity: 1; } to { opacity: 0; } }
-#twinspot-root .ts-sheet[data-state='open'] { animation: ts-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
-#twinspot-root .ts-sheet[data-state='closed'] { animation: ts-out 0.24s cubic-bezier(0.4, 0, 1, 1) both; }
-#twinspot-root .ts-overlay[data-state='open'] { animation: ts-fade-in 0.32s both; }
-#twinspot-root .ts-overlay[data-state='closed'] { animation: ts-fade-out 0.24s both; }
-@media (prefers-reduced-motion: reduce) { #twinspot-root .ts-sheet, #twinspot-root .ts-overlay { animation: none !important; } }
+#kestrix-coupon-guard-root .ts-sheet[data-state='open'] { animation: ts-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
+#kestrix-coupon-guard-root .ts-sheet[data-state='closed'] { animation: ts-out 0.24s cubic-bezier(0.4, 0, 1, 1) both; }
+#kestrix-coupon-guard-root .ts-overlay[data-state='open'] { animation: ts-fade-in 0.32s both; }
+#kestrix-coupon-guard-root .ts-overlay[data-state='closed'] { animation: ts-fade-out 0.24s both; }
+@media (prefers-reduced-motion: reduce) { #kestrix-coupon-guard-root .ts-sheet, #kestrix-coupon-guard-root .ts-overlay { animation: none !important; } }

@@ -37,7 +37,7 @@ export interface Filters {
 	page: number;
 }
 
-export type Tab = string; // Built-in ids plus any added by add-ons through the `twinspotLite.tabs` filter.
+export type Tab = string; // Built-in ids plus any added by add-ons through the `kestrixCouponGuard.tabs` filter.
 export type ExtraTab = { id: string; label: string; render: () => ReactElement };
 
 export interface RingOrder {

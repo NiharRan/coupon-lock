@@ -1,11 +1,11 @@
-# Twinspot on WooCommerce: How to Build It and Who You're Up Against (Late 2026)
+# Kestrix Coupon Guard on WooCommerce: How to Build It and Who You're Up Against (Late 2026)
 
 **Yes, you can solve the same problem on WooCommerce. Build a thin, free WordPress.org plugin that collects signals and enforces decisions at checkout, and have it call the same graph backend your Shopify app uses. On WooCommerce the closest competitor is TrustLens, a free plugin that already does linked-account and coupon-abuse detection, so your edge has to be real graph clustering, cross-store intelligence and polish, not "we detect linked accounts."** Webhooks or the REST API on their own can't stop a coupon before the order exists, so you need code running inside the store. On both platforms, the market for affordable promo- and refund-abuse tools is new, thin and full of small indie apps. The big names (Signifyd, NoFraud/Wyllo, SEON) are built around payment fraud and chargebacks.
 
 ## TL;DR
 - **Architecture:** Use a hybrid. A free WordPress.org plugin hooks into checkout: `woocommerce_coupon_is_valid` for coupon blocking, order holds and status changes, plus a device-fingerprint script. It sends hashed identifiers to your shared SaaS graph engine. WooCommerce webhooks and the REST API handle history backfill. WordPress.org explicitly allows plugins that act as an interface to a paid external service, as long as you disclose it and the user opts in.
 - **Competitors:** On WooCommerce, TrustLens (free core, Pro from $79/yr) already fingerprints shipping address, billing address, phone, IP, payment method and user agent to link accounts. DevPress's Coupon Restrictions handles Gmail-alias, address and IP limits per coupon. OPMC Anti-Fraud ($139/yr, 3.7★ from 69 reviews) and FraudLabs Pro (free up to 500 queries/mo) are payment-fraud scorers. On Shopify, CustomerGenius ($9.99/mo), RefundSentry ($49/mo) and OverlayIQ (currently unlisted) go after promo and refund abuse. Shopify's own tools don't score refunds or returns.
-- **Positioning:** Sell Twinspot as "fraud-ring detection for promos and refunds," priced for small shops. Lead with multi-hop graph clustering (A shares a phone with B, B shares a card with C), a visual ring view, and real-time blocking of first-order coupons. Launch WooCommerce through a WordPress.org freemium plugin first and add the WooCommerce.com Marketplace (70% to vendor) later. Shopify's 0% revenue share on your first $1M is the better money platform.
+- **Positioning:** Sell Kestrix Coupon Guard as "fraud-ring detection for promos and refunds," priced for small shops. Lead with multi-hop graph clustering (A shares a phone with B, B shares a card with C), a visual ring view, and real-time blocking of first-order coupons. Launch WooCommerce through a WordPress.org freemium plugin first and add the WooCommerce.com Marketplace (70% to vendor) later. Shopify's 0% revenue share on your first $1M is the better money platform.
 
 ## Key Findings
 
@@ -27,7 +27,7 @@
 | Key restrictions | No locked or trialware code inside the plugin (guideline 5). No external calls without explicit opt-in consent (guideline 7). A service that only validates license keys is banned | Business, code and UX review. Must share revenue. No upsell links outside Woo | Built for Shopify badge drives discovery; billing through Shopify |
 | Discovery | Plugin search inside wp-admin; huge reach, low willingness to pay | Curated, higher-intent buyers; annual subscriptions are the norm (e.g. OPMC at $139/yr) | App Store search and categories; monthly subscriptions are the norm |
 
-**What this means:** WooCommerce merchants usually find tools through WordPress.org search and expect a useful free tier, then pay once a year for "Pro." Shopify merchants expect a monthly plan billed through Shopify. With a SaaS backend, the WordPress.org free plugin can call your service, which guideline 6 allows. Any premium features should live server-side or in a separate add-on hosted outside WordPress.org. That fits Twinspot well, because the graph engine is the product.
+**What this means:** WooCommerce merchants usually find tools through WordPress.org search and expect a useful free tier, then pay once a year for "Pro." Shopify merchants expect a monthly plan billed through Shopify. With a SaaS backend, the WordPress.org free plugin can call your service, which guideline 6 allows. Any premium features should live server-side or in a separate add-on hosted outside WordPress.org. That fits Kestrix Coupon Guard well, because the graph engine is the product.
 
 ### 3. Shopify vs. WooCommerce merchants: what changes for one shared backend
 - **Self-hosted chaos.** Every WooCommerce store has a different host, caching layer, PHP version and set of checkout plugins. A checkout hook that blocks synchronously on your API must have a strict timeout and **fail open**, or you'll break checkouts and collect 1-star reviews. OPMC's reviews show the risk: one review says the plugin "interfered with real customer attempts to buy product," and 17% of its reviews are 1-star.
@@ -37,7 +37,7 @@
 
 ### 4. GDPR for EU merchants
 - **Legal basis.** GDPR Recital 47 says "the processing of personal data strictly necessary for the purposes of preventing fraud also constitutes a legitimate interest of the data controller." The EDPB's Guidelines 1/2024 stress that this rests on **strict necessity** and still needs a careful balancing test. Promo abuse probably fits as fraud prevention, but merchants should document a legitimate-interest assessment, and you should provide a template.
-- **Roles.** The merchant is the controller and Twinspot is the processor. You need a DPA, a published sub-processor list and EU hosting as an option.
+- **Roles.** The merchant is the controller and Kestrix Coupon Guard is the processor. You need a DPA, a published sub-processor list and EU hosting as an option.
 - **Data minimization.** Hash identifiers in the plugin with a per-store secret (HMAC) before sending, and store hashes rather than raw emails or addresses where you can. TrustLens says it pseudonymizes identifiers with keyed HMAC-SHA256 and supports WordPress's export and erasure tools. Match that.
 - **Device fingerprinting** in the EU may also fall under ePrivacy rules on storing or accessing information on the user's device. Make the fingerprint script configurable, and let merchants tie it to their consent banner.
 - **Cross-store network effects** (flagging a fraudster from store A at store B) carry the most legal risk, because you become a shared fraud database. TrustLens limits its "Store Trust Network" to a merchant's *own* stores on multi-site Pro plans. Start there too.
@@ -63,7 +63,7 @@
 
 *I did not verify current pricing or ratings for Riskified, ClearSale, Sift, MaxMind minFraud, Sardine or Stytch in this pass. They are mostly enterprise or API payment-fraud tools and don't target your niche directly.*
 
-## Gaps and Where Twinspot Can Stand Out
+## Gaps and Where Kestrix Coupon Guard Can Stand Out
 
 1. **Nobody markets true graph or ring detection to small shops.** TrustLens, RefundSentry and CustomerGenius all do *pairwise* signal matching ("these accounts share an address"). None advertises transitive clustering, multi-hop rings or a visual ring map. Make "see the whole ring" your demo moment.
 2. **Promo, refund and checkout enforcement are split across tools.** On Shopify, CustomerGenius does promos, RefundSentry does refunds, and OverlayIQ (blocking at checkout) is currently unlisted. One app covering first-order coupon blocking *plus* refund-abuse scoring at roughly $15–39/mo has an open slot.
@@ -89,7 +89,7 @@
 - **Phase 2:** Apply to the WooCommerce.com Marketplace once you have reviews. Use Woo's SaaS Billing API. Price there to cover the 30% cut.
 - **Shopify stays your revenue engine:** 0% revenue share until $1M lifetime. Use Shopify Functions for checkout validation and go for the Built for Shopify badge.
 
-**Positioning line:** "Twinspot finds the one person behind five accounts and stops the sixth welcome discount at checkout, for the price of one abused coupon a month."
+**Positioning line:** "Kestrix Coupon Guard finds the one person behind five accounts and stops the sixth welcome discount at checkout, for the price of one abused coupon a month."
 
 ## Caveats
 - Some ratings and prices come from third-party aggregators or vendor sites, not live store listings. That applies to NoFraud/Wyllo's guarantee tiers, TrustLens's review count and SEON's tiers. Check them before quoting publicly.

@@ -1,20 +1,20 @@
 <?php
 /**
- * One dismissible note about Twinspot Pro, shown only on our own Twinspot screen.
+ * One dismissible note about Kestrix Coupon Guard Pro, shown only on our own Kestrix Coupon Guard screen.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Features;
+namespace Kestrix_Coupon_Guard\Features;
 
-use Twinspot_Lite\Admin\Page;
-use Twinspot_Lite\Module;
+use Kestrix_Coupon_Guard\Admin\Page;
+use Kestrix_Coupon_Guard\Module;
 
 defined( 'ABSPATH' ) || exit;
 
 class ProUpsell implements Module {
-	const META   = 'twinspot_lite_pro_notice_until';
-	const ACTION = 'twinspot_lite_dismiss_pro_notice';
+	const META   = 'kestrix_coupon_guard_pro_notice_until';
+	const ACTION = 'kestrix_coupon_guard_dismiss_pro_notice';
 	const URL    = 'https://twinspotlab.com/software/twinspot-pro';
 
 	/**
@@ -39,16 +39,16 @@ class ProUpsell implements Module {
 			return;
 		}
 		$dismiss = wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION ), self::ACTION );
-		echo '<div class="notice notice-info"><p>' . esc_html__( 'Twinspot Pro adds more tools for finding and handling repeat accounts.', 'twinspot-lite' ) . ' <a href="' . esc_url( self::URL ) . '">' . esc_html__( 'Learn more', 'twinspot-lite' ) . '</a> | <a href="' . esc_url( $dismiss ) . '">' . esc_html__( 'Dismiss', 'twinspot-lite' ) . '</a></p></div>';
+		echo '<div class="notice notice-info"><p>' . esc_html__( 'Kestrix Coupon Guard Pro adds more tools for finding and handling repeat accounts.', 'kestrix-coupon-guard' ) . ' <a href="' . esc_url( self::URL ) . '">' . esc_html__( 'Learn more', 'kestrix-coupon-guard' ) . '</a> | <a href="' . esc_url( $dismiss ) . '">' . esc_html__( 'Dismiss', 'kestrix-coupon-guard' ) . '</a></p></div>';
 	}
 
 	public function dismiss(): void {
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
-			wp_die( esc_html__( 'You do not have permission to do this.', 'twinspot-lite' ), 403 );
+			wp_die( esc_html__( 'You do not have permission to do this.', 'kestrix-coupon-guard' ), 403 );
 		}
 		check_admin_referer( self::ACTION );
 		update_user_meta( get_current_user_id(), self::META, time() + 30 * DAY_IN_SECONDS );
-		wp_safe_redirect( admin_url( 'admin.php?page=twinspot-lite' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=kestrix-coupon-guard' ) );
 		exit;
 	}
 }

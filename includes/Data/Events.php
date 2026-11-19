@@ -3,16 +3,16 @@
  * Audit log: one row per coupon decision, ring change and background task. Keeps 30 days.
  * Rows hold order ids and coupon codes only, never customer details or hashes. All SQL for the log lives here.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Data;
+namespace Kestrix_Coupon_Guard\Data;
 
 defined( 'ABSPATH' ) || exit;
 
 class Events {
 	const DB_VERSION = '1';
-	const OPTION     = 'twinspot_lite_events_db';
+	const OPTION     = 'kestrix_coupon_guard_events_db';
 	const KEEP_DAYS  = 30;
 
 	/** Filter values (event type or severity) to the event types they cover. */
@@ -28,7 +28,7 @@ class Events {
 
 	public function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'twinspot_lite_events';
+		return $wpdb->prefix . 'kestrix_coupon_guard_events';
 	}
 
 	public function install(): void {
@@ -64,7 +64,7 @@ class Events {
 		global $wpdb;
 		$wpdb->query( "DROP TABLE IF EXISTS {$this->table()}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
 		delete_option( self::OPTION );
-		delete_transient( 'twinspot_lite_pruned' );
+		delete_transient( 'kestrix_coupon_guard_pruned' );
 	}
 
 	/**
@@ -89,8 +89,8 @@ class Events {
 			return;
 		}
 		$wpdb->insert( $this->table(), $row ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		if ( ! get_transient( 'twinspot_lite_pruned' ) ) {
-			set_transient( 'twinspot_lite_pruned', 1, HOUR_IN_SECONDS );
+		if ( ! get_transient( 'kestrix_coupon_guard_pruned' ) ) {
+			set_transient( 'kestrix_coupon_guard_pruned', 1, HOUR_IN_SECONDS );
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$this->table()} WHERE created < %s", gmdate( 'Y-m-d H:i:s', time() - self::KEEP_DAYS * DAY_IN_SECONDS ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 	}

@@ -1,15 +1,15 @@
 <?php
 /**
- * Class autoloader: Twinspot_Lite\Sub\Name loads includes/Sub/Name.php.
+ * Class autoloader: Kestrix_Coupon_Guard\Sub\Name loads includes/Sub/Name.php.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
 defined( 'ABSPATH' ) || exit;
 
 spl_autoload_register(
 	function ( $class_name ) {
-		$prefix = 'Twinspot_Lite\\';
+		$prefix = 'Kestrix_Coupon_Guard\\';
 		if ( 0 !== strpos( $class_name, $prefix ) ) {
 			return;
 		}

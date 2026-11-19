@@ -1,17 +1,17 @@
 <?php
 /**
- * Public PHP facade for add-ons (Twinspot Pro). Static, stable surface over the internal services.
+ * Public PHP facade for add-ons (Kestrix Coupon Guard Pro). Static, stable surface over the internal services.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite;
+namespace Kestrix_Coupon_Guard;
 
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
-use Twinspot_Lite\Rest\Overview;
+use Kestrix_Coupon_Guard\Data\BlockLog;
+use Kestrix_Coupon_Guard\Data\Edges;
+use Kestrix_Coupon_Guard\Data\Events;
+use Kestrix_Coupon_Guard\Data\Fingerprinter;
+use Kestrix_Coupon_Guard\Rest\Overview;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -112,8 +112,8 @@ class Api {
 
 	/** Hold an order for review: flag, notify, move to on-hold. */
 	public static function hold_order( \WC_Order $order, string $note ): void {
-		$order->update_meta_data( '_twinspot_lite_held', '1' );
-		do_action( 'twinspot_lite_order_held', $order, array() );
+		$order->update_meta_data( '_kestrix_coupon_guard_held', '1' );
+		do_action( 'kestrix_coupon_guard_order_held', $order, array() );
 		$order->update_status( 'on-hold', $note );
 	}
 }

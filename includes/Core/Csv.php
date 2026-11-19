@@ -2,10 +2,10 @@
 /**
  * CSV line builder. Pure PHP, no WordPress calls.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Core;
+namespace Kestrix_Coupon_Guard\Core;
 
 defined( 'ABSPATH' ) || exit;
 

@@ -2,10 +2,10 @@
 /**
  * Pure logic, no WordPress calls, so tests/core-test.php runs with plain php.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Core;
+namespace Kestrix_Coupon_Guard\Core;
 
 defined( 'ABSPATH' ) || exit;
 

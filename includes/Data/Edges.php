@@ -2,12 +2,12 @@
 /**
  * The edges table: one row of hashes per order. All SQL lives here.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Data;
+namespace Kestrix_Coupon_Guard\Data;
 
-use Twinspot_Lite\Core\Rings;
+use Kestrix_Coupon_Guard\Core\Rings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,11 +17,11 @@ class Edges {
 
 	/** Bump when the table columns or keys change; maybe_install() then runs dbDelta once. */
 	const DB_VERSION = '1';
-	const OPTION     = 'twinspot_lite_edges_db';
+	const OPTION     = 'kestrix_coupon_guard_edges_db';
 
 	public function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'twinspot_lite_edges';
+		return $wpdb->prefix . 'kestrix_coupon_guard_edges';
 	}
 
 	public function install(): void {

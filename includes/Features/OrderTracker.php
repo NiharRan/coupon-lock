@@ -2,16 +2,16 @@
 /**
  * Records order hashes at checkout, notes matches on the order, forgets dead orders.
  *
- * @package Twinspot_Lite
+ * @package Kestrix_Coupon_Guard
  */
 
-namespace Twinspot_Lite\Features;
+namespace Kestrix_Coupon_Guard\Features;
 
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
-use Twinspot_Lite\Module;
+use Kestrix_Coupon_Guard\Data\BlockLog;
+use Kestrix_Coupon_Guard\Data\Edges;
+use Kestrix_Coupon_Guard\Data\Events;
+use Kestrix_Coupon_Guard\Data\Fingerprinter;
+use Kestrix_Coupon_Guard\Module;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -40,7 +40,7 @@ class OrderTracker implements Module {
 			'woocommerce_payment_complete_order_status',
 			function ( $status, $order_id ) {
 				$order = wc_get_order( $order_id );
-				return $order && $order->get_meta( '_twinspot_lite_held' ) && apply_filters( 'twinspot_lite_keep_held', true, $order, $status ) ? 'on-hold' : $status;
+				return $order && $order->get_meta( '_kestrix_coupon_guard_held' ) && apply_filters( 'kestrix_coupon_guard_keep_held', true, $order, $status ) ? 'on-hold' : $status;
 			},
 			10,
 			2
@@ -50,14 +50,14 @@ class OrderTracker implements Module {
 			'woocommerce_order_status_changed',
 			function ( $order_id, $from, $to ) {
 				$order = 'on-hold' === $from && 'on-hold' !== $to ? wc_get_order( $order_id ) : null;
-				if ( ! $order || ! $order->get_meta( '_twinspot_lite_held' ) ) {
+				if ( ! $order || ! $order->get_meta( '_kestrix_coupon_guard_held' ) ) {
 					return;
 				}
 				if ( current_user_can( 'edit_shop_orders' ) ) {
-					$order->delete_meta_data( '_twinspot_lite_held' );
+					$order->delete_meta_data( '_kestrix_coupon_guard_held' );
 					$order->save();
-				} elseif ( in_array( $to, array( 'processing', 'completed' ), true ) && apply_filters( 'twinspot_lite_keep_held', true, $order, $to ) ) {
-					$order->update_status( 'on-hold', __( 'Twinspot: returned to on-hold, a held order cannot be released automatically.', 'twinspot-lite' ) );
+				} elseif ( in_array( $to, array( 'processing', 'completed' ), true ) && apply_filters( 'kestrix_coupon_guard_keep_held', true, $order, $to ) ) {
+					$order->update_status( 'on-hold', __( 'Kestrix Coupon Guard: returned to on-hold, a held order cannot be released automatically.', 'kestrix-coupon-guard' ) );
 				}
 			},
 			10,
@@ -85,7 +85,7 @@ class OrderTracker implements Module {
 			// Fail open so checkout never breaks, but leave a trace so a skipped hold is visible to the merchant.
 			if ( $order instanceof \WC_Order ) {
 				try {
-					$order->add_order_note( __( 'Twinspot: the repeat-shopper check failed for this order. Review it manually.', 'twinspot-lite' ) );
+					$order->add_order_note( __( 'Kestrix Coupon Guard: the repeat-shopper check failed for this order. Review it manually.', 'kestrix-coupon-guard' ) );
 				} catch ( \Throwable $e2 ) {
 					return;
 				}
@@ -106,8 +106,8 @@ class OrderTracker implements Module {
 			'matched' => $this->edges->match_types( $h, $m ),
 		) : array();
 		$allowed = $this->log->is_allowed( $h );
-		$hold    = 'yes' === get_option( 'twinspot_lite_hold_orders' ) && 'no' === get_option( 'twinspot_lite_enabled' ); // With blocking on, the coupon was already refused at checkout.
-		$guard   = $hold || 'no' !== get_option( 'twinspot_lite_enabled' );
+		$hold    = 'yes' === get_option( 'kestrix_coupon_guard_hold_orders' ) && 'no' === get_option( 'kestrix_coupon_guard_enabled' ); // With blocking on, the coupon was already refused at checkout.
+		$guard   = $hold || 'no' !== get_option( 'kestrix_coupon_guard_enabled' );
 		$saved   = array();
 		/** @var \WC_Order_Item_Coupon $item */
 		foreach ( $order->get_items( 'coupon' ) as $item ) {
@@ -121,7 +121,7 @@ class OrderTracker implements Module {
 				'order_id' => $order->get_id(),
 				'amount'   => $saved[ $code ] ?? 0,
 			);
-			if ( $first && $hold && $m && ! $allowed && apply_filters( 'twinspot_lite_hold_order', true, $order, $m ) ) {
+			if ( $first && $hold && $m && ! $allowed && apply_filters( 'kestrix_coupon_guard_hold_order', true, $order, $m ) ) {
 				$this->events->add( 'held', $base + $match );
 				$held = true;
 				continue;
@@ -131,29 +131,29 @@ class OrderTracker implements Module {
 			$this->events->add( 'clean', $base + ( $first ? $match : array() ) + array( 'meta' => array( 'why' => $why ) ) );
 		}
 		if ( $held ) {
-			$order->update_meta_data( '_twinspot_lite_held', '1' );
-			do_action( 'twinspot_lite_order_held', $order, $m );
-			$order->update_status( 'on-hold', __( 'Twinspot: held for review, a new-customers-only coupon was used by a returning shopper.', 'twinspot-lite' ) );
+			$order->update_meta_data( '_kestrix_coupon_guard_held', '1' );
+			do_action( 'kestrix_coupon_guard_order_held', $order, $m );
+			$order->update_status( 'on-hold', __( 'Kestrix Coupon Guard: held for review, a new-customers-only coupon was used by a returning shopper.', 'kestrix-coupon-guard' ) );
 		}
 	}
 
 	/** Order note for a coupon the guard refused earlier in this checkout session. */
 	private function note_blocked_coupon( $order ): void {
-		$b = WC()->session ? WC()->session->get( 'twinspot_lite_blocked_coupon' ) : null;
+		$b = WC()->session ? WC()->session->get( 'kestrix_coupon_guard_blocked_coupon' ) : null;
 		if ( ! $order instanceof \WC_Order || ! $b ) {
 			return;
 		}
-		WC()->session->set( 'twinspot_lite_blocked_coupon', null );
+		WC()->session->set( 'kestrix_coupon_guard_blocked_coupon', null );
 		if ( in_array( strtolower( (string) $b['code'] ), array_map( 'strtolower', $order->get_coupon_codes() ), true ) ) {
 			return; // The shopper changed details and the coupon went through in the end, so nothing was blocked for this order.
 		}
 		$ids = array_values( array_diff( (array) $b['ids'], array( $order->get_id() ) ) );
 		$order->add_order_note(
 			sprintf(
-				/* translators: 1: Twinspot label, 2: linked order numbers, 3: coupon code, 4: ring link */
-				__( '%1$s shares email, phone or address with order(s) %2$s. Blocked coupon “%3$s” at checkout. %4$s', 'twinspot-lite' ),
-				'<strong>' . esc_html__( 'Twinspot System Alert', 'twinspot-lite' ) . '</strong> <span style="background:#ffdad6;color:#dc2626;border-radius:99px;padding:1px 8px;font-size:11px;font-weight:600">' . esc_html__( 'Coupon Blocked', 'twinspot-lite' ) . '</span><br>',
-				$ids ? $this->links( $ids ) : esc_html__( '(none left)', 'twinspot-lite' ),
+				/* translators: 1: Kestrix Coupon Guard label, 2: linked order numbers, 3: coupon code, 4: ring link */
+				__( '%1$s shares email, phone or address with order(s) %2$s. Blocked coupon “%3$s” at checkout. %4$s', 'kestrix-coupon-guard' ),
+				'<strong>' . esc_html__( 'Kestrix Coupon Guard System Alert', 'kestrix-coupon-guard' ) . '</strong> <span style="background:#ffdad6;color:#dc2626;border-radius:99px;padding:1px 8px;font-size:11px;font-weight:600">' . esc_html__( 'Coupon Blocked', 'kestrix-coupon-guard' ) . '</span><br>',
+				$ids ? $this->links( $ids ) : esc_html__( '(none left)', 'kestrix-coupon-guard' ),
 				esc_html( $b['code'] ),
 				$this->ring_link( $order->get_id(), count( $ids ) + 1 )
 			)
@@ -173,36 +173,36 @@ class OrderTracker implements Module {
 	private function ring_link( int $order_id, int $orders ): string {
 		$url  = add_query_arg(
 			array(
-				'page' => 'twinspot-lite',
+				'page' => 'kestrix-coupon-guard',
 				'ring' => $order_id,
 			),
 			admin_url( 'admin.php' )
 		);
 		$chip = 'background:#e7eeff;border-radius:6px;padding:1px 8px;font-size:11px';
 		/* translators: %d: number of orders in the ring */
-		$count = _n( '%d order', '%d orders', $orders, 'twinspot-lite' );
-		return '<br><span style="' . $chip . '">' . esc_html__( 'Linked ring', 'twinspot-lite' ) . '</span> <span style="' . $chip . '">' . esc_html( sprintf( $count, $orders ) ) . '</span> <a href="' . esc_url( $url ) . '">' . esc_html__( 'Inspect tree →', 'twinspot-lite' ) . '</a>';
+		$count = _n( '%d order', '%d orders', $orders, 'kestrix-coupon-guard' );
+		return '<br><span style="' . $chip . '">' . esc_html__( 'Linked ring', 'kestrix-coupon-guard' ) . '</span> <span style="' . $chip . '">' . esc_html( sprintf( $count, $orders ) ) . '</span> <a href="' . esc_url( $url ) . '">' . esc_html__( 'Inspect tree →', 'kestrix-coupon-guard' ) . '</a>';
 	}
 
 	/** @param bool $log Log a "ring" event when the order links to earlier ones (off for the bulk import). */
 	public function record( $order, bool $log = true ): void {
-		if ( ! $order instanceof \WC_Order || ! apply_filters( 'twinspot_lite_track_order', true, $order ) ) {
+		if ( ! $order instanceof \WC_Order || ! apply_filters( 'kestrix_coupon_guard_track_order', true, $order ) ) {
 			return;
 		}
 		$h = $this->fingerprinter->hashes( $order->get_billing_email(), $order->get_billing_phone(), $order->get_billing_address_1(), $order->get_billing_postcode(), $order->get_customer_ip_address() );
 		$this->edges->save( $order->get_id(), $h );
 		$m = $this->edges->matches( $h, $order->get_id() );
-		if ( $m && ! $order->get_meta( '_twinspot_lite_noted' ) ) {
+		if ( $m && ! $order->get_meta( '_kestrix_coupon_guard_noted' ) ) {
 			$order->add_order_note(
 				sprintf(
 					/* translators: %s: list of order numbers, e.g. "#12, #15" */
-					__( 'Twinspot: shares email, phone or address with order(s) %s', 'twinspot-lite' ),
+					__( 'Kestrix Coupon Guard: shares email, phone or address with order(s) %s', 'kestrix-coupon-guard' ),
 					$this->links( $m )
 				) . ' ' . $this->ring_link( $order->get_id(), count( $m ) + 1 )
 			);
-			$order->update_meta_data( '_twinspot_lite_noted', '1' );
+			$order->update_meta_data( '_kestrix_coupon_guard_noted', '1' );
 			$order->save();
-			do_action( 'twinspot_lite_ring_detected', $order, $m );
+			do_action( 'kestrix_coupon_guard_ring_detected', $order, $m );
 			if ( $log ) {
 				$this->events->add(
 					'ring',
