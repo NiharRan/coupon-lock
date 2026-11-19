@@ -5,27 +5,27 @@ import type { Overview } from '../types';
 
 export function Rules( { data, enabled }: { data: Overview | null; enabled: boolean } ) {
 	const rows = [
-		{ icon: AtSign, title: __( 'Email', 'twinspot-lite' ), text: __( 'Gmail dots and +tags are ignored, so john.doe+deal@gmail.com matches johndoe@gmail.com.', 'twinspot-lite' ) },
-		{ icon: Phone, title: __( 'Phone', 'twinspot-lite' ), text: __( 'The last 10 digits are compared, ignoring spaces and dashes.', 'twinspot-lite' ) },
-		{ icon: Home, title: __( 'Address', 'twinspot-lite' ), text: __( 'Street line and postcode must both be present to match.', 'twinspot-lite' ) },
+		{ icon: AtSign, title: __( 'Email', 'coupon-lock' ), text: __( 'Gmail dots and +tags are ignored, so john.doe+deal@gmail.com matches johndoe@gmail.com.', 'coupon-lock' ) },
+		{ icon: Phone, title: __( 'Phone', 'coupon-lock' ), text: __( 'The last 10 digits are compared, ignoring spaces and dashes.', 'coupon-lock' ) },
+		{ icon: Home, title: __( 'Address', 'coupon-lock' ), text: __( 'Street line and postcode must both be present to match.', 'coupon-lock' ) },
 	];
 	return (
 		<div className="flex flex-col gap-5">
 			<Card className="p-6">
-				<h2 className="text-[16px] font-semibold">{ __( 'New customers only coupons', 'twinspot-lite' ) }</h2>
+				<h2 className="text-[16px] font-semibold">{ __( 'New customers only coupons', 'coupon-lock' ) }</h2>
 				<p className="mt-1 text-muted">
 					{ enabled
-						? __( 'A coupon with “New customers only (Twinspot)” ticked is refused when the shopper’s email, phone or address matches an earlier order.', 'twinspot-lite' )
-						: __( 'Blocking is paused in Plugin Settings. Orders are still indexed.', 'twinspot-lite' ) }
+						? __( 'A coupon with “New customers only (Coupon Lock)” ticked is refused when the shopper’s email, phone or address matches an earlier order.', 'coupon-lock' )
+						: __( 'Blocking is paused in Plugin Settings. Orders are still indexed.', 'coupon-lock' ) }
 				</p>
 				<div className="mt-4 flex items-center gap-3">
 					<span className="flex h-9 w-9 items-center justify-center rounded-lg bg-info text-primary"><TicketCheck size={ 18 } /></span>
-					<span>{ data ? sprintf( __( '%d coupons use this rule.', 'twinspot-lite' ), data.stats.coupons ) : '…' }</span>
-					<a className="text-primary hover:underline" href="edit.php?post_type=shop_coupon">{ __( 'Edit coupons', 'twinspot-lite' ) }</a>
+					<span>{ data ? sprintf( __( '%d coupons use this rule.', 'coupon-lock' ), data.stats.coupons ) : '…' }</span>
+					<a className="text-primary hover:underline" href="edit.php?post_type=shop_coupon">{ __( 'Edit coupons', 'coupon-lock' ) }</a>
 				</div>
 			</Card>
 			<Card className="p-6">
-				<h2 className="text-[16px] font-semibold">{ __( 'What counts as a match', 'twinspot-lite' ) }</h2>
+				<h2 className="text-[16px] font-semibold">{ __( 'What counts as a match', 'coupon-lock' ) }</h2>
 				<div className="mt-4 grid gap-6 md:grid-cols-3">
 					{ rows.map( ( r ) => (
 						<div key={ r.title } className="flex gap-3">
@@ -34,7 +34,7 @@ export function Rules( { data, enabled }: { data: Overview | null; enabled: bool
 						</div>
 					) ) }
 				</div>
-				<p className="mt-5 text-[13px] text-muted">{ __( 'IP addresses are stored but never used to match, because shared networks would block innocent shoppers. If a detail is missing, nothing matches and checkout continues.', 'twinspot-lite' ) }</p>
+				<p className="mt-5 text-[13px] text-muted">{ __( 'IP addresses are stored but never used to match, because shared networks would block innocent shoppers. If a detail is missing, nothing matches and checkout continues.', 'coupon-lock' ) }</p>
 			</Card>
 		</div>
 	);

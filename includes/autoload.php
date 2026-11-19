@@ -1,15 +1,15 @@
 <?php
 /**
- * Class autoloader: Twinspot_Lite\Sub\Name loads includes/Sub/Name.php.
+ * Class autoloader: Coupon_Lock\Sub\Name loads includes/Sub/Name.php.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
 defined( 'ABSPATH' ) || exit;
 
 spl_autoload_register(
 	function ( $class_name ) {
-		$prefix = 'Twinspot_Lite\\';
+		$prefix = 'Coupon_Lock\\';
 		if ( 0 !== strpos( $class_name, $prefix ) ) {
 			return;
 		}

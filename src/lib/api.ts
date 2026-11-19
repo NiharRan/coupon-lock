@@ -1,7 +1,7 @@
 import apiFetch from '@wordpress/api-fetch';
 import type { Activity, ActivityFilters, Overview, RingDetail } from '../types';
 
-const base = '/twinspot-lite/v1';
+const base = '/coupon-lock/v1';
 
 export const getOverview = ( params: Record< string, string | number > ): Promise< Overview > => {
 	const qs = new URLSearchParams( Object.entries( params ).map( ( [ k, v ] ) => [ k, String( v ) ] ) ).toString();

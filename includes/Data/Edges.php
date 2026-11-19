@@ -2,12 +2,12 @@
 /**
  * The edges table: one row of hashes per order. All SQL lives here.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Data;
+namespace Coupon_Lock\Data;
 
-use Twinspot_Lite\Core\Rings;
+use Coupon_Lock\Core\Rings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -17,11 +17,11 @@ class Edges {
 
 	/** Bump when the table columns or keys change; maybe_install() then runs dbDelta once. */
 	const DB_VERSION = '1';
-	const OPTION     = 'twinspot_lite_edges_db';
+	const OPTION     = 'coupon_lock_edges_db';
 
 	public function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'twinspot_lite_edges';
+		return $wpdb->prefix . 'coupon_lock_edges';
 	}
 
 	public function install(): void {

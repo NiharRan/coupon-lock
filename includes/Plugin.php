@@ -2,25 +2,25 @@
 /**
  * Wires services and modules together. The only place that knows every class.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite;
+namespace Coupon_Lock;
 
-use Twinspot_Lite\Admin\Page;
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
-use Twinspot_Lite\Features\Compat;
-use Twinspot_Lite\Features\CouponGuard;
-use Twinspot_Lite\Features\Importer;
-use Twinspot_Lite\Features\OrderTracker;
-use Twinspot_Lite\Features\Privacy;
-use Twinspot_Lite\Features\ProUpsell;
-use Twinspot_Lite\Rest\Activity;
-use Twinspot_Lite\Rest\Overview;
-use Twinspot_Lite\Rest\Routes;
+use Coupon_Lock\Admin\Page;
+use Coupon_Lock\Data\BlockLog;
+use Coupon_Lock\Data\Edges;
+use Coupon_Lock\Data\Events;
+use Coupon_Lock\Data\Fingerprinter;
+use Coupon_Lock\Features\Compat;
+use Coupon_Lock\Features\CouponGuard;
+use Coupon_Lock\Features\Importer;
+use Coupon_Lock\Features\OrderTracker;
+use Coupon_Lock\Features\Privacy;
+use Coupon_Lock\Features\ProUpsell;
+use Coupon_Lock\Rest\Activity;
+use Coupon_Lock\Rest\Overview;
+use Coupon_Lock\Rest\Routes;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,7 +39,7 @@ class Plugin {
 	}
 
 	public function boot(): void {
-		foreach ( apply_filters( 'twinspot_lite_modules', $this->modules() ) as $module ) {
+		foreach ( apply_filters( 'coupon_lock_modules', $this->modules() ) as $module ) {
 			if ( $module instanceof Module ) {
 				$module->register();
 			}
@@ -47,7 +47,7 @@ class Plugin {
 	}
 
 	/**
-	 * Every feature of the plugin. Add a new Module here (or via the twinspot_lite_modules filter).
+	 * Every feature of the plugin. Add a new Module here (or via the coupon_lock_modules filter).
 	 *
 	 * @return Module[]
 	 */

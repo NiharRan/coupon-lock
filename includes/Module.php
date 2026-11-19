@@ -2,10 +2,10 @@
 /**
  * A feature of the plugin. To add one: implement this, list it in Plugin::modules().
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite;
+namespace Coupon_Lock;
 
 defined( 'ABSPATH' ) || exit;
 

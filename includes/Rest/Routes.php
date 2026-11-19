@@ -2,18 +2,18 @@
 /**
  * REST routes used by the React admin screen. Thin: delegates to Overview and Importer.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Rest;
+namespace Coupon_Lock\Rest;
 
-use Twinspot_Lite\Features\Importer;
-use Twinspot_Lite\Module;
+use Coupon_Lock\Features\Importer;
+use Coupon_Lock\Module;
 
 defined( 'ABSPATH' ) || exit;
 
 class Routes implements Module {
-	const NAMESPACE = 'twinspot-lite/v1';
+	const NAMESPACE = 'coupon-lock/v1';
 
 	/** @var Overview */
 	private $overview;
@@ -84,7 +84,7 @@ class Routes implements Module {
 				'callback'            => function ( \WP_REST_Request $req ) {
 					$ring = $this->overview->detail( (int) $req['order_id'] );
 					if ( null === $ring ) {
-						return new \WP_Error( 'twinspot_lite_no_ring', __( 'This order is not in a ring.', 'twinspot-lite' ), array( 'status' => 404 ) );
+						return new \WP_Error( 'coupon_lock_no_ring', __( 'This order is not in a ring.', 'coupon-lock' ), array( 'status' => 404 ) );
 					}
 					unset( $ring['ids'] );
 					return $ring;
@@ -99,7 +99,7 @@ class Routes implements Module {
 				'permission_callback' => $permission,
 				'callback'            => function ( \WP_REST_Request $req ) {
 					$on = $this->overview->set_blocked( (int) $req['order_id'], 'POST' === $req->get_method() );
-					return null === $on ? new \WP_Error( 'twinspot_lite_no_ring', __( 'This order is not in a ring.', 'twinspot-lite' ), array( 'status' => 404 ) ) : array( 'blocked' => $on );
+					return null === $on ? new \WP_Error( 'coupon_lock_no_ring', __( 'This order is not in a ring.', 'coupon-lock' ), array( 'status' => 404 ) ) : array( 'blocked' => $on );
 				},
 			)
 		);
@@ -111,7 +111,7 @@ class Routes implements Module {
 				'permission_callback' => $permission,
 				'callback'            => function ( \WP_REST_Request $req ) {
 					$on = $this->overview->set_allowed( (int) $req['order_id'], 'POST' === $req->get_method() );
-					return null === $on ? new \WP_Error( 'twinspot_lite_no_ring', __( 'This order is not in a ring.', 'twinspot-lite' ), array( 'status' => 404 ) ) : array( 'allowed' => $on );
+					return null === $on ? new \WP_Error( 'coupon_lock_no_ring', __( 'This order is not in a ring.', 'coupon-lock' ), array( 'status' => 404 ) ) : array( 'allowed' => $on );
 				},
 			)
 		);
@@ -166,18 +166,18 @@ class Routes implements Module {
 						// Only keys that were sent change; block and hold are exclusive, and the one just turned on wins.
 						if ( $req->has_param( 'hold' ) ) {
 							$hold = rest_sanitize_boolean( $req->get_param( 'hold' ) );
-							update_option( 'twinspot_lite_hold_orders', $hold ? 'yes' : 'no' );
-							$hold && update_option( 'twinspot_lite_enabled', 'no' );
+							update_option( 'coupon_lock_hold_orders', $hold ? 'yes' : 'no' );
+							$hold && update_option( 'coupon_lock_enabled', 'no' );
 						}
 						if ( $req->has_param( 'enabled' ) ) {
 							$on = rest_sanitize_boolean( $req->get_param( 'enabled' ) );
-							update_option( 'twinspot_lite_enabled', $on ? 'yes' : 'no' );
-							$on && ! $req->has_param( 'hold' ) && update_option( 'twinspot_lite_hold_orders', 'no' );
+							update_option( 'coupon_lock_enabled', $on ? 'yes' : 'no' );
+							$on && ! $req->has_param( 'hold' ) && update_option( 'coupon_lock_hold_orders', 'no' );
 						}
 					}
 					return array(
-						'enabled' => 'no' !== get_option( 'twinspot_lite_enabled' ),
-						'hold'    => 'yes' === get_option( 'twinspot_lite_hold_orders' ),
+						'enabled' => 'no' !== get_option( 'coupon_lock_enabled' ),
+						'hold'    => 'yes' === get_option( 'coupon_lock_hold_orders' ),
 					);
 				},
 			)

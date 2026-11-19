@@ -2,16 +2,16 @@
 /**
  * WordPress personal-data export, erase and privacy-policy text.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Features;
+namespace Coupon_Lock\Features;
 
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
-use Twinspot_Lite\Module;
+use Coupon_Lock\Data\BlockLog;
+use Coupon_Lock\Data\Edges;
+use Coupon_Lock\Data\Events;
+use Coupon_Lock\Data\Fingerprinter;
+use Coupon_Lock\Module;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -45,16 +45,16 @@ class Privacy implements Module {
 	}
 
 	public function add_exporter( $exporters ) {
-		$exporters['twinspot-lite'] = array(
-			'exporter_friendly_name' => __( 'Twinspot Lite', 'twinspot-lite' ),
+		$exporters['coupon-lock'] = array(
+			'exporter_friendly_name' => __( 'Coupon Lock', 'coupon-lock' ),
 			'callback'               => array( $this, 'export' ),
 		);
 		return $exporters;
 	}
 
 	public function add_eraser( $erasers ) {
-		$erasers['twinspot-lite'] = array(
-			'eraser_friendly_name' => __( 'Twinspot Lite', 'twinspot-lite' ),
+		$erasers['coupon-lock'] = array(
+			'eraser_friendly_name' => __( 'Coupon Lock', 'coupon-lock' ),
 			'callback'             => array( $this, 'erase' ),
 		);
 		return $erasers;
@@ -64,24 +64,24 @@ class Privacy implements Module {
 		$items = array();
 		foreach ( $this->rows_for_email( $email ) as $row ) {
 			$items[] = array(
-				'group_id'    => 'twinspot-lite',
-				'group_label' => __( 'Twinspot Lite order fingerprints', 'twinspot-lite' ),
-				'item_id'     => 'twinspot-lite-' . $row['order_id'],
+				'group_id'    => 'coupon-lock',
+				'group_label' => __( 'Coupon Lock order fingerprints', 'coupon-lock' ),
+				'item_id'     => 'coupon-lock-' . $row['order_id'],
 				'data'        => array(
 					array(
-						'name'  => __( 'Order', 'twinspot-lite' ),
+						'name'  => __( 'Order', 'coupon-lock' ),
 						'value' => '#' . $row['order_id'],
 					),
 					array(
-						'name'  => __( 'Stored one-way hashes of', 'twinspot-lite' ),
+						'name'  => __( 'Stored one-way hashes of', 'coupon-lock' ),
 						'value' => implode(
 							', ',
 							array_filter(
 								array(
-									$row['email_h'] ? __( 'email', 'twinspot-lite' ) : '',
-									$row['phone_h'] ? __( 'phone', 'twinspot-lite' ) : '',
-									$row['addr_h'] ? __( 'address', 'twinspot-lite' ) : '',
-									$row['ip_h'] ? __( 'IP address', 'twinspot-lite' ) : '',
+									$row['email_h'] ? __( 'email', 'coupon-lock' ) : '',
+									$row['phone_h'] ? __( 'phone', 'coupon-lock' ) : '',
+									$row['addr_h'] ? __( 'address', 'coupon-lock' ) : '',
+									$row['ip_h'] ? __( 'IP address', 'coupon-lock' ) : '',
 								)
 							)
 						),
@@ -121,9 +121,9 @@ class Privacy implements Module {
 	public function add_policy_text(): void {
 		if ( function_exists( 'wp_add_privacy_policy_content' ) ) {
 			wp_add_privacy_policy_content(
-				'Twinspot Lite',
+				'Coupon Lock',
 				wp_kses_post(
-					'<p>' . __( 'Twinspot Lite stores one-way (HMAC-SHA256) hashes of the billing email, phone, address and IP address of each order, to detect repeat customers and block repeat welcome coupons. The hashes cannot be turned back into the original details. They are kept on this site only, are not sent to any third party, and are deleted when the order is deleted, cancelled or erased through the WordPress privacy tools.', 'twinspot-lite' ) . '</p>'
+					'<p>' . __( 'Coupon Lock stores one-way (HMAC-SHA256) hashes of the billing email, phone, address and IP address of each order, to detect repeat customers and block repeat welcome coupons. The hashes cannot be turned back into the original details. They are kept on this site only, are not sent to any third party, and are deleted when the order is deleted, cancelled or erased through the WordPress privacy tools.', 'coupon-lock' ) . '</p>'
 				)
 			);
 		}

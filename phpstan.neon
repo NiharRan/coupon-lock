@@ -2,7 +2,7 @@ parameters:
     level: 5
     treatPhpDocTypesAsCertain: false
     paths:
-        - twinspot-lite.php
+        - coupon-lock.php
         - uninstall.php
         - includes
     bootstrapFiles:

@@ -2,17 +2,17 @@
 /**
  * Builds the data for the admin Overview screen. No request handling here.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Rest;
+namespace Coupon_Lock\Rest;
 
-use Twinspot_Lite\Core\Rings;
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
-use Twinspot_Lite\Features\CouponGuard;
+use Coupon_Lock\Core\Rings;
+use Coupon_Lock\Data\BlockLog;
+use Coupon_Lock\Data\Edges;
+use Coupon_Lock\Data\Events;
+use Coupon_Lock\Data\Fingerprinter;
+use Coupon_Lock\Features\CouponGuard;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -54,7 +54,7 @@ class Overview {
 			'customers'       => $this->edges->customers(),
 			'coupons'         => $this->coupon_count(),
 			'sample'          => (bool) array_filter( array_keys( $by_id ), fn( $id ) => $id >= Edges::SAMPLE_BASE ),
-			'version'         => TWINSPOT_LITE_VERSION,
+			'version'         => COUPON_LOCK_VERSION,
 		);
 
 		// Search: order number, or an email (matched through its hash).
@@ -274,7 +274,7 @@ class Overview {
 		 * @param array $detail   Ring detail as returned by the REST route.
 		 * @param int   $order_id Order the detail was requested for.
 		 */
-		$filtered = apply_filters( 'twinspot_lite_ring_detail', $detail, $order_id );
+		$filtered = apply_filters( 'coupon_lock_ring_detail', $detail, $order_id );
 		return is_array( $filtered ) ? $filtered : $detail;
 	}
 

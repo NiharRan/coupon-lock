@@ -2,18 +2,18 @@
 /**
  * Blocked coupon attempts (daily count for 30 days, last 200 events), manually blocked rings and allowed (whitelisted) rings.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Data;
+namespace Coupon_Lock\Data;
 
 defined( 'ABSPATH' ) || exit;
 
 class BlockLog {
-	const OPTION  = 'twinspot_lite_blocked';
-	const EVENTS  = 'twinspot_lite_block_events';
-	const RINGS   = 'twinspot_lite_blocked_rings';
-	const ALLOWED = 'twinspot_lite_allowed_rings';
+	const OPTION  = 'coupon_lock_blocked';
+	const EVENTS  = 'coupon_lock_block_events';
+	const RINGS   = 'coupon_lock_blocked_rings';
+	const ALLOWED = 'coupon_lock_allowed_rings';
 
 	/**
 	 * @param int[] $order_ids Earlier orders the shopper matched.

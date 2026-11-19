@@ -1,9 +1,9 @@
 {
-  "name": "twinspot-lite",
+  "name": "coupon-lock",
   "version": "0.3.0",
   "private": true,
   "license": "GPL-2.0-or-later",
-  "description": "Admin UI for the Twinspot Lite WordPress plugin.",
+  "description": "Admin UI for the Coupon Lock WordPress plugin.",
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",

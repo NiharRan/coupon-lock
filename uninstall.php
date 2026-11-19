@@ -2,7 +2,7 @@
 /**
  * Remove plugin data on delete.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
 if ( ! defined( 'ABSPATH' ) || ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -11,14 +11,14 @@ if ( ! defined( 'ABSPATH' ) || ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 require __DIR__ . '/includes/autoload.php';
 
-( new \Twinspot_Lite\Data\Edges() )->drop();
-( new \Twinspot_Lite\Data\Events() )->drop();
-( new \Twinspot_Lite\Data\Fingerprinter() )->uninstall();
-delete_option( 'twinspot_lite_blocked' );
-delete_option( 'twinspot_lite_block_events' );
-delete_option( 'twinspot_lite_blocked_rings' );
-delete_option( 'twinspot_lite_allowed_rings' );
-delete_option( 'twinspot_lite_enabled' );
-delete_option( 'twinspot_lite_hold_orders' );
-delete_metadata( 'user', 0, 'twinspot_lite_pro_notice_until', '', true );
-// Order and coupon meta (_twinspot_lite_noted, _twinspot_lite_held, _twinspot_lite_first_order_only) is tiny and harmless; left in place.
+( new \Coupon_Lock\Data\Edges() )->drop();
+( new \Coupon_Lock\Data\Events() )->drop();
+( new \Coupon_Lock\Data\Fingerprinter() )->uninstall();
+delete_option( 'coupon_lock_blocked' );
+delete_option( 'coupon_lock_block_events' );
+delete_option( 'coupon_lock_blocked_rings' );
+delete_option( 'coupon_lock_allowed_rings' );
+delete_option( 'coupon_lock_enabled' );
+delete_option( 'coupon_lock_hold_orders' );
+delete_metadata( 'user', 0, 'coupon_lock_pro_notice_until', '', true );
+// Order and coupon meta (_coupon_lock_noted, _coupon_lock_held, _coupon_lock_first_order_only) is tiny and harmless; left in place.

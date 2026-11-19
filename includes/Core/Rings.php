@@ -2,10 +2,10 @@
 /**
  * Ring detection. Pure PHP, no WordPress calls.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Core;
+namespace Coupon_Lock\Core;
 
 defined( 'ABSPATH' ) || exit;
 
