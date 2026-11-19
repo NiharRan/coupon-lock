@@ -13,8 +13,8 @@ use Coupon_Lock\Module;
 defined( 'ABSPATH' ) || exit;
 
 class ProUpsell implements Module {
-	const META   = 'coupon_lock_pro_notice_until';
-	const ACTION = 'coupon_lock_dismiss_pro_notice';
+	const META   = 'ts_coupon_lock_pro_notice_until';
+	const ACTION = 'ts_coupon_lock_dismiss_pro_notice';
 	const URL    = 'https://twinspotlab.com/software/twinspot-pro';
 
 	/**

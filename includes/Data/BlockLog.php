@@ -10,10 +10,10 @@ namespace Coupon_Lock\Data;
 defined( 'ABSPATH' ) || exit;
 
 class BlockLog {
-	const OPTION  = 'coupon_lock_blocked';
-	const EVENTS  = 'coupon_lock_block_events';
-	const RINGS   = 'coupon_lock_blocked_rings';
-	const ALLOWED = 'coupon_lock_allowed_rings';
+	const OPTION  = 'ts_coupon_lock_blocked';
+	const EVENTS  = 'ts_coupon_lock_block_events';
+	const RINGS   = 'ts_coupon_lock_blocked_rings';
+	const ALLOWED = 'ts_coupon_lock_allowed_rings';
 
 	/**
 	 * @param int[] $order_ids Earlier orders the shopper matched.

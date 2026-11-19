@@ -9,7 +9,7 @@ How the Coupon Lock admin screen looks, how it is built, and how it stays within
 | Language | TypeScript (strict), checked with `npm run typecheck` | Types in `src/types.ts` mirror the REST responses. `wp-scripts` compiles `.ts`/`.tsx` through Babel, so the build itself does not type check. |
 | UI framework | React 18 via `@wordpress/element` | WordPress already ships React; bundling our own breaks guideline 13. `@wordpress/scripts` maps `react`, `react-dom` and `react/jsx-runtime` to WordPress's copy. |
 | Components | shadcn/ui style, hand-written in `src/components/ui/` (Button, Card, Badge, Input, Select) | shadcn is copy-paste code on Tailwind, `class-variance-authority`, `clsx` and `tailwind-merge`. Only the pieces we use are copied, so no CLI and no unused Radix. Add Radix primitives only when a screen needs one (dialog, popover). |
-| Styling | Tailwind CSS 3, no preflight, `important: '#coupon-lock-root'` | Every utility is scoped to our root, so wp-admin and other plugins are untouched. `src/style.css` adds a tiny scoped base in place of the reset. |
+| Styling | Tailwind CSS 3, no preflight, `important: '#ts-coupon-lock-root'` | Every utility is scoped to our root, so wp-admin and other plugins are untouched. `src/style.css` adds a tiny scoped base in place of the reset. |
 | Icons | `lucide-react` (tree-shaken inline SVG) | Local, no icon font, no CDN. |
 | Motion | `motion/react` inside `MotionConfig reducedMotion="user"` | Short fades and staggered rows; respects the OS reduced-motion setting. |
 | Data | `@wordpress/api-fetch` to our REST routes | WordPress adds the nonce and root URL. |

@@ -39,7 +39,7 @@ class Plugin {
 	}
 
 	public function boot(): void {
-		foreach ( apply_filters( 'coupon_lock_modules', $this->modules() ) as $module ) {
+		foreach ( apply_filters( 'ts_coupon_lock_modules', $this->modules() ) as $module ) {
 			if ( $module instanceof Module ) {
 				$module->register();
 			}
@@ -47,7 +47,7 @@ class Plugin {
 	}
 
 	/**
-	 * Every feature of the plugin. Add a new Module here (or via the coupon_lock_modules filter).
+	 * Every feature of the plugin. Add a new Module here (or via the ts_coupon_lock_modules filter).
 	 *
 	 * @return Module[]
 	 */

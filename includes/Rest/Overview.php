@@ -54,7 +54,7 @@ class Overview {
 			'customers'       => $this->edges->customers(),
 			'coupons'         => $this->coupon_count(),
 			'sample'          => (bool) array_filter( array_keys( $by_id ), fn( $id ) => $id >= Edges::SAMPLE_BASE ),
-			'version'         => COUPON_LOCK_VERSION,
+			'version'         => TS_COUPON_LOCK_VERSION,
 		);
 
 		// Search: order number, or an email (matched through its hash).
@@ -274,7 +274,7 @@ class Overview {
 		 * @param array $detail   Ring detail as returned by the REST route.
 		 * @param int   $order_id Order the detail was requested for.
 		 */
-		$filtered = apply_filters( 'coupon_lock_ring_detail', $detail, $order_id );
+		$filtered = apply_filters( 'ts_coupon_lock_ring_detail', $detail, $order_id );
 		return is_array( $filtered ) ? $filtered : $detail;
 	}
 

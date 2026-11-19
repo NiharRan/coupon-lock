@@ -72,10 +72,10 @@ export interface TableProps {
 export function RingsTable( { data, filters, setFilters, setPage, onOpen }: TableProps ) {
 	const { rings, total, total_pages: pages } = data;
 	return (
-		<section className="flex min-w-0 flex-col gap-4" aria-labelledby="coupon-lock-rings">
+		<section className="flex min-w-0 flex-col gap-4" aria-labelledby="ts-coupon-lock-rings">
 			<div className="flex flex-wrap items-end justify-between gap-3">
 				<div>
-					<h2 id="coupon-lock-rings" className="text-[20px] font-bold leading-[26px] tracking-[-0.02em]">{ __( 'Linked rings', 'coupon-lock' ) }</h2>
+					<h2 id="ts-coupon-lock-rings" className="text-[20px] font-bold leading-[26px] tracking-[-0.02em]">{ __( 'Linked rings', 'coupon-lock' ) }</h2>
 					<p className="mt-1 text-muted">{ __( 'Orders that share an email, phone or delivery address.', 'coupon-lock' ) }</p>
 				</div>
 				<div className="relative w-full max-w-[280px]">
@@ -339,8 +339,8 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 
 			<div className="flex flex-wrap items-start gap-x-12 gap-y-10">
 				<div className="min-w-0 flex-[999_1_560px]"><RingsTable data={ data } filters={ filters } setFilters={ setFilters } setPage={ setPage } onOpen={ onOpen } /></div>
-				<aside className="flex min-w-0 flex-[1_1_280px] flex-col gap-5" aria-labelledby="coupon-lock-latest">
-					<h2 id="coupon-lock-latest" className="text-[20px] font-bold leading-[26px] tracking-[-0.02em]">{ __( 'Latest checkouts', 'coupon-lock' ) }</h2>
+				<aside className="flex min-w-0 flex-[1_1_280px] flex-col gap-5" aria-labelledby="ts-coupon-lock-latest">
+					<h2 id="ts-coupon-lock-latest" className="text-[20px] font-bold leading-[26px] tracking-[-0.02em]">{ __( 'Latest checkouts', 'coupon-lock' ) }</h2>
 					{ act && act.events.length === 0 && <p className="text-muted">{ __( 'Nothing yet. Checkouts that use a guarded coupon show up here.', 'coupon-lock' ) }</p> }
 					{ act && act.events.length > 0 && (
 						<ol className="m-0 flex list-none flex-col gap-[22px] border-l-[1.5px] border-[#C9D1CD] p-0 pl-5">

@@ -40,7 +40,7 @@ class OrderTracker implements Module {
 			'woocommerce_payment_complete_order_status',
 			function ( $status, $order_id ) {
 				$order = wc_get_order( $order_id );
-				return $order && $order->get_meta( '_coupon_lock_held' ) && apply_filters( 'coupon_lock_keep_held', true, $order, $status ) ? 'on-hold' : $status;
+				return $order && $order->get_meta( '_ts_coupon_lock_held' ) && apply_filters( 'ts_coupon_lock_keep_held', true, $order, $status ) ? 'on-hold' : $status;
 			},
 			10,
 			2
@@ -50,13 +50,13 @@ class OrderTracker implements Module {
 			'woocommerce_order_status_changed',
 			function ( $order_id, $from, $to ) {
 				$order = 'on-hold' === $from && 'on-hold' !== $to ? wc_get_order( $order_id ) : null;
-				if ( ! $order || ! $order->get_meta( '_coupon_lock_held' ) ) {
+				if ( ! $order || ! $order->get_meta( '_ts_coupon_lock_held' ) ) {
 					return;
 				}
 				if ( current_user_can( 'edit_shop_orders' ) ) {
-					$order->delete_meta_data( '_coupon_lock_held' );
+					$order->delete_meta_data( '_ts_coupon_lock_held' );
 					$order->save();
-				} elseif ( in_array( $to, array( 'processing', 'completed' ), true ) && apply_filters( 'coupon_lock_keep_held', true, $order, $to ) ) {
+				} elseif ( in_array( $to, array( 'processing', 'completed' ), true ) && apply_filters( 'ts_coupon_lock_keep_held', true, $order, $to ) ) {
 					$order->update_status( 'on-hold', __( 'Coupon Lock: returned to on-hold, a held order cannot be released automatically.', 'coupon-lock' ) );
 				}
 			},
@@ -106,8 +106,8 @@ class OrderTracker implements Module {
 			'matched' => $this->edges->match_types( $h, $m ),
 		) : array();
 		$allowed = $this->log->is_allowed( $h );
-		$hold    = 'yes' === get_option( 'coupon_lock_hold_orders' ) && 'no' === get_option( 'coupon_lock_enabled' ); // With blocking on, the coupon was already refused at checkout.
-		$guard   = $hold || 'no' !== get_option( 'coupon_lock_enabled' );
+		$hold    = 'yes' === get_option( 'ts_coupon_lock_hold_orders' ) && 'no' === get_option( 'ts_coupon_lock_enabled' ); // With blocking on, the coupon was already refused at checkout.
+		$guard   = $hold || 'no' !== get_option( 'ts_coupon_lock_enabled' );
 		$saved   = array();
 		/** @var \WC_Order_Item_Coupon $item */
 		foreach ( $order->get_items( 'coupon' ) as $item ) {
@@ -121,7 +121,7 @@ class OrderTracker implements Module {
 				'order_id' => $order->get_id(),
 				'amount'   => $saved[ $code ] ?? 0,
 			);
-			if ( $first && $hold && $m && ! $allowed && apply_filters( 'coupon_lock_hold_order', true, $order, $m ) ) {
+			if ( $first && $hold && $m && ! $allowed && apply_filters( 'ts_coupon_lock_hold_order', true, $order, $m ) ) {
 				$this->events->add( 'held', $base + $match );
 				$held = true;
 				continue;
@@ -131,19 +131,19 @@ class OrderTracker implements Module {
 			$this->events->add( 'clean', $base + ( $first ? $match : array() ) + array( 'meta' => array( 'why' => $why ) ) );
 		}
 		if ( $held ) {
-			$order->update_meta_data( '_coupon_lock_held', '1' );
-			do_action( 'coupon_lock_order_held', $order, $m );
+			$order->update_meta_data( '_ts_coupon_lock_held', '1' );
+			do_action( 'ts_coupon_lock_order_held', $order, $m );
 			$order->update_status( 'on-hold', __( 'Coupon Lock: held for review, a new-customers-only coupon was used by a returning shopper.', 'coupon-lock' ) );
 		}
 	}
 
 	/** Order note for a coupon the guard refused earlier in this checkout session. */
 	private function note_blocked_coupon( $order ): void {
-		$b = WC()->session ? WC()->session->get( 'coupon_lock_blocked_coupon' ) : null;
+		$b = WC()->session ? WC()->session->get( 'ts_coupon_lock_blocked_coupon' ) : null;
 		if ( ! $order instanceof \WC_Order || ! $b ) {
 			return;
 		}
-		WC()->session->set( 'coupon_lock_blocked_coupon', null );
+		WC()->session->set( 'ts_coupon_lock_blocked_coupon', null );
 		if ( in_array( strtolower( (string) $b['code'] ), array_map( 'strtolower', $order->get_coupon_codes() ), true ) ) {
 			return; // The shopper changed details and the coupon went through in the end, so nothing was blocked for this order.
 		}
@@ -186,13 +186,13 @@ class OrderTracker implements Module {
 
 	/** @param bool $log Log a "ring" event when the order links to earlier ones (off for the bulk import). */
 	public function record( $order, bool $log = true ): void {
-		if ( ! $order instanceof \WC_Order || ! apply_filters( 'coupon_lock_track_order', true, $order ) ) {
+		if ( ! $order instanceof \WC_Order || ! apply_filters( 'ts_coupon_lock_track_order', true, $order ) ) {
 			return;
 		}
 		$h = $this->fingerprinter->hashes( $order->get_billing_email(), $order->get_billing_phone(), $order->get_billing_address_1(), $order->get_billing_postcode(), $order->get_customer_ip_address() );
 		$this->edges->save( $order->get_id(), $h );
 		$m = $this->edges->matches( $h, $order->get_id() );
-		if ( $m && ! $order->get_meta( '_coupon_lock_noted' ) ) {
+		if ( $m && ! $order->get_meta( '_ts_coupon_lock_noted' ) ) {
 			$order->add_order_note(
 				sprintf(
 					/* translators: %s: list of order numbers, e.g. "#12, #15" */
@@ -200,9 +200,9 @@ class OrderTracker implements Module {
 					$this->links( $m )
 				) . ' ' . $this->ring_link( $order->get_id(), count( $m ) + 1 )
 			);
-			$order->update_meta_data( '_coupon_lock_noted', '1' );
+			$order->update_meta_data( '_ts_coupon_lock_noted', '1' );
 			$order->save();
-			do_action( 'coupon_lock_ring_detected', $order, $m );
+			do_action( 'ts_coupon_lock_ring_detected', $order, $m );
 			if ( $log ) {
 				$this->events->add(
 					'ring',

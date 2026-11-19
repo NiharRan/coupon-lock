@@ -112,8 +112,8 @@ class Api {
 
 	/** Hold an order for review: flag, notify, move to on-hold. */
 	public static function hold_order( \WC_Order $order, string $note ): void {
-		$order->update_meta_data( '_coupon_lock_held', '1' );
-		do_action( 'coupon_lock_order_held', $order, array() );
+		$order->update_meta_data( '_ts_coupon_lock_held', '1' );
+		do_action( 'ts_coupon_lock_order_held', $order, array() );
 		$order->update_status( 'on-hold', $note );
 	}
 }

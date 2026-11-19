@@ -3,7 +3,7 @@
  * Dev only. Integration test against a real WooCommerce site. Not shipped (see .distignore).
  *
  * Run from the WordPress root:  wp eval-file wp-content/plugins/coupon-lock/tests/wc-test.php
- * Creates products, coupons and orders (orders tagged _coupon_lock_test) and deletes them at the end. Existing orders, rules and the two shield settings are left as they were. Still best run on a dev site.
+ * Creates products, coupons and orders (orders tagged _ts_coupon_lock_test) and deletes them at the end. Existing orders, rules and the two shield settings are left as they were. Still best run on a dev site.
  * Exit code is 1 if any check fails.
  */
 
@@ -30,7 +30,7 @@ function ts_order( $email, $phone, $line1, $postcode, $coupon = '', $status = 'p
 	$o->set_billing_phone( $phone );
 	$o->set_billing_address_1( $line1 );
 	$o->set_billing_postcode( $postcode );
-	$o->update_meta_data( '_coupon_lock_test', '1' );
+	$o->update_meta_data( '_ts_coupon_lock_test', '1' );
 	if ( $coupon ) {
 		$o->apply_coupon( $coupon );
 	}
@@ -65,11 +65,11 @@ function ts_apply( $code, $email, $phone = '', $line1 = '', $postcode = '' ) {
 
 /** Delete only what this script created. Deleting an order also drops its index row (woocommerce_delete_order), so real data is untouched. */
 function ts_clean() {
-	foreach ( wc_get_orders( array( 'limit' => -1, 'status' => array_keys( wc_get_order_statuses() ), 'meta_key' => '_coupon_lock_test', 'meta_value' => '1' ) ) as $o ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev test.
+	foreach ( wc_get_orders( array( 'limit' => -1, 'status' => array_keys( wc_get_order_statuses() ), 'meta_key' => '_ts_coupon_lock_test', 'meta_value' => '1' ) ) as $o ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev test.
 		$o->delete( true );
 	}
-	update_option( 'coupon_lock_enabled', 'yes' );
-	update_option( 'coupon_lock_hold_orders', 'no' );
+	update_option( 'ts_coupon_lock_enabled', 'yes' );
+	update_option( 'ts_coupon_lock_hold_orders', 'no' );
 }
 
 // ---------------------------------------------------------------- setup
@@ -79,9 +79,9 @@ ts_check( class_exists( 'WooCommerce' ) && class_exists( 'Coupon_Lock\Plugin' ),
 global $wpdb;
 $edges = new Edges();
 ts_check( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $edges->table() ) ) === $edges->table(), 'edges table exists' );
-ts_check( (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'coupon_lock_events' ) ), 'events table exists' );
+ts_check( (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $wpdb->prefix . 'ts_coupon_lock_events' ) ), 'events table exists' );
 
-$ts_saved = array( get_option( 'coupon_lock_enabled' ), get_option( 'coupon_lock_hold_orders' ) ); // Restored at the end.
+$ts_saved = array( get_option( 'ts_coupon_lock_enabled' ), get_option( 'ts_coupon_lock_hold_orders' ) ); // Restored at the end.
 ts_clean();
 $GLOBALS['ts_product'] = $ts_product = new WC_Product_Simple();
 $ts_product->set_name( 'TS Test Product' );
@@ -94,7 +94,7 @@ foreach ( array( 'TSFIRST' => 'yes', 'TSOPEN' => 'no' ) as $code => $first ) {
 	$c->set_code( $code );
 	$c->set_discount_type( 'fixed_cart' );
 	$c->set_amount( 10 );
-	$c->update_meta_data( '_coupon_lock_first_order_only', $first );
+	$c->update_meta_data( '_ts_coupon_lock_first_order_only', $first );
 	$c->save();
 }
 
@@ -120,10 +120,10 @@ list( $ok ) = ts_apply( 'TSFIRST', '' );
 ts_check( $ok, 'fails open with no billing details' );
 list( $ok ) = ts_apply( 'TSFIRST', 'x@example.com', '555-100-2000' ); // Same phone as first order.
 ts_check( ! $ok, 'phone match refused' );
-update_option( 'coupon_lock_enabled', 'no' );
+update_option( 'ts_coupon_lock_enabled', 'no' );
 list( $ok ) = ts_apply( 'TSFIRST', 'jane.doe@gmail.com' );
 ts_check( $ok, 'shield off: repeat shopper accepted' );
-update_option( 'coupon_lock_enabled', 'yes' );
+update_option( 'ts_coupon_lock_enabled', 'yes' );
 
 // Whitelist.
 $fp = new Fingerprinter();
@@ -135,23 +135,23 @@ ts_check( $ok, 'allowed ring skips the guard' );
 
 // ---------------------------------------------------------------- hold mode
 echo "Hold mode\n";
-update_option( 'coupon_lock_enabled', 'no' );
-update_option( 'coupon_lock_hold_orders', 'yes' );
+update_option( 'ts_coupon_lock_enabled', 'no' );
+update_option( 'ts_coupon_lock_hold_orders', 'yes' );
 list( $ok ) = ts_apply( 'TSFIRST', 'jane.doe@gmail.com' );
 ts_check( $ok, 'hold mode does not refuse the coupon' );
 
 $h1 = ts_order( 'jane.doe@gmail.com', '', '', '', 'TSFIRST' );
-ts_check( 'on-hold' === $h1->get_status() && $h1->get_meta( '_coupon_lock_held' ), 'repeat shopper order lands on-hold and flagged' );
+ts_check( 'on-hold' === $h1->get_status() && $h1->get_meta( '_ts_coupon_lock_held' ), 'repeat shopper order lands on-hold and flagged' );
 $h1->payment_complete();
 $h1 = wc_get_order( $h1->get_id() );
 ts_check( 'on-hold' === $h1->get_status(), 'payment_complete() keeps it on-hold' );
 $h1->update_status( 'processing' );
 $h1 = wc_get_order( $h1->get_id() );
 ts_check( 'on-hold' === $h1->get_status(), 'direct update_status(processing) with no user is reverted' );
-add_filter( 'coupon_lock_keep_held', '__return_false' );
+add_filter( 'ts_coupon_lock_keep_held', '__return_false' );
 $h1->update_status( 'processing' );
-ts_check( 'processing' === wc_get_order( $h1->get_id() )->get_status(), 'coupon_lock_keep_held filter lets it through' );
-remove_filter( 'coupon_lock_keep_held', '__return_false' );
+ts_check( 'processing' === wc_get_order( $h1->get_id() )->get_status(), 'ts_coupon_lock_keep_held filter lets it through' );
+remove_filter( 'ts_coupon_lock_keep_held', '__return_false' );
 
 $h2 = ts_order( 'janedoe@gmail.com', '', '', '', 'TSFIRST' );
 ts_check( 'on-hold' === $h2->get_status(), 'second held order' );
@@ -159,17 +159,17 @@ $admin = get_users( array( 'role' => 'administrator', 'number' => 1 ) )[0];
 wp_set_current_user( $admin->ID );
 $h2->update_status( 'processing' );
 $h2 = wc_get_order( $h2->get_id() );
-ts_check( 'processing' === $h2->get_status() && ! $h2->get_meta( '_coupon_lock_held' ), 'admin release works and clears the flag' );
+ts_check( 'processing' === $h2->get_status() && ! $h2->get_meta( '_ts_coupon_lock_held' ), 'admin release works and clears the flag' );
 wp_set_current_user( 0 );
 
 $ok1 = ts_order( 'fresh.person@example.com', '555-777-8888', '3 Fresh Ln', '33333', 'TSFIRST' );
 ts_check( 'on-hold' !== $ok1->get_status(), 'new shopper is not held' );
 $ok2 = ts_order( 'jane.doe@gmail.com', '', '', '', 'TSOPEN' );
 ts_check( 'on-hold' !== $ok2->get_status(), 'repeat shopper with unrestricted coupon is not held' );
-add_filter( 'coupon_lock_hold_order', '__return_false' );
+add_filter( 'ts_coupon_lock_hold_order', '__return_false' );
 $ok3 = ts_order( 'jane.doe@gmail.com', '', '', '', 'TSFIRST' );
-remove_filter( 'coupon_lock_hold_order', '__return_false' );
-ts_check( 'on-hold' !== $ok3->get_status(), 'coupon_lock_hold_order filter skips the hold' );
+remove_filter( 'ts_coupon_lock_hold_order', '__return_false' );
+ts_check( 'on-hold' !== $ok3->get_status(), 'ts_coupon_lock_hold_order filter skips the hold' );
 
 // ---------------------------------------------------------------- cleanup of index
 echo "Index upkeep\n";
@@ -214,13 +214,13 @@ ts_check( $exp === $got, 'Api: component merges rings of several seeds, lone see
 ts_check( array() === \Coupon_Lock\Api::component( array() ), 'Api: component of nothing is empty' );
 $rows = \Coupon_Lock\Api::edge_rows( array( $ra->get_id(), 1999999999 ) );
 ts_check( array( $ra->get_id() ) === array_keys( $rows ) && array( 'email_h', 'phone_h', 'addr_h' ) === array_keys( $rows[ $ra->get_id() ] ), 'Api: edge_rows returns the three hashes, skips unknown orders' );
-add_filter( 'coupon_lock_ring_detail', function ( $d ) {
+add_filter( 'ts_coupon_lock_ring_detail', function ( $d ) {
 	$d['hubs'][] = array( 'id' => 'x1', 'type' => 'device', 'label' => 'Same device', 'count' => 2, 'top' => false );
 	return $d;
 } );
 $detail = ( new \Coupon_Lock\Rest\Overview( $edges, new Fingerprinter(), new BlockLog(), new \Coupon_Lock\Data\Events() ) )->detail( $ra->get_id() );
 ts_check( $detail && 'x1' === end( $detail['hubs'] )['id'], 'Api: ring detail filter can append hubs' );
-remove_all_filters( 'coupon_lock_ring_detail' );
+remove_all_filters( 'ts_coupon_lock_ring_detail' );
 ts_check( array() === \Coupon_Lock\Api::ring_orders_for_order( 1999999999 ), 'Api: unknown order has no ring' );
 ts_check( ! \Coupon_Lock\Api::is_ring_allowed_for_order( $ra->get_id() ) && ! \Coupon_Lock\Api::is_ring_allowed_for_details( 'rc@example.org', '555-300-9999', '7 Ring Rd', '30003' ), 'Api: ring not allowed by default' );
 $rh = array();
@@ -232,7 +232,7 @@ ts_check( \Coupon_Lock\Api::is_ring_allowed_for_order( $ra->get_id() ) && \Coupo
 ( new BlockLog() )->set_ring_allowed( 1, array_values( array_filter( $rh ) ), false );
 \Coupon_Lock\Api::hold_order( $rd, 'Test hold' );
 $rd = wc_get_order( $rd->get_id() );
-ts_check( 'on-hold' === $rd->get_status() && '1' === (string) $rd->get_meta( '_coupon_lock_held' ), 'Api: hold_order puts the order on hold with the meta' );
+ts_check( 'on-hold' === $rd->get_status() && '1' === (string) $rd->get_meta( '_ts_coupon_lock_held' ), 'Api: hold_order puts the order on hold with the meta' );
 ts_clean();
 
 // ---------------------------------------------------------------- privacy and REST
@@ -269,8 +269,8 @@ ts_check( 'none' === \Coupon_Lock\Api::ring_state_for_order( $sid ), 'Api: ring_
 
 // ---------------------------------------------------------------- done
 ts_clean();
-update_option( 'coupon_lock_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
-update_option( 'coupon_lock_hold_orders', $ts_saved[1] ? $ts_saved[1] : 'no' );
+update_option( 'ts_coupon_lock_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
+update_option( 'ts_coupon_lock_hold_orders', $ts_saved[1] ? $ts_saved[1] : 'no' );
 $ts_product->delete( true );
 foreach ( array( 'TSFIRST', 'TSOPEN' ) as $code ) {
 	wp_delete_post( wc_get_coupon_id_by_code( $code ), true );

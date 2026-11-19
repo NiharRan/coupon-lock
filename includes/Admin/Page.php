@@ -37,9 +37,9 @@ class Page implements Module {
 		}
 		$asset = require $asset_file;
 		$url   = plugins_url( 'build/', $this->dir . 'coupon-lock.php' );
-		wp_enqueue_script( 'coupon-lock-admin', $url . 'index.js', apply_filters( 'coupon_lock_admin_script_deps', $asset['dependencies'] ), $asset['version'], true );
-		wp_enqueue_style( 'coupon-lock-admin', $url . 'style-index.css', array(), $asset['version'] );
-		wp_set_script_translations( 'coupon-lock-admin', 'coupon-lock' );
+		wp_enqueue_script( 'ts-coupon-lock-admin', $url . 'index.js', apply_filters( 'ts_coupon_lock_admin_script_deps', $asset['dependencies'] ), $asset['version'], true );
+		wp_enqueue_style( 'ts-coupon-lock-admin', $url . 'style-index.css', array(), $asset['version'] );
+		wp_set_script_translations( 'ts-coupon-lock-admin', 'coupon-lock' );
 	}
 
 	public function render(): void {
@@ -50,6 +50,6 @@ class Page implements Module {
 			echo '<div class="wrap"><div class="notice notice-error"><p>' . esc_html__( 'Coupon Lock admin files are missing. Reinstall the plugin.', 'coupon-lock' ) . '</p></div></div>';
 			return;
 		}
-		echo '<div class="wrap"><div id="coupon-lock-root"></div></div>';
+		echo '<div class="wrap"><div id="ts-coupon-lock-root"></div></div>';
 	}
 }

@@ -18,14 +18,14 @@
 @tailwind utilities;
 
 /* Minimal base, scoped to our root, in place of Tailwind's preflight. */
-#coupon-lock-root,
-#coupon-lock-root *,
-#coupon-lock-root *::before,
-#coupon-lock-root *::after {
+#ts-coupon-lock-root,
+#ts-coupon-lock-root *,
+#ts-coupon-lock-root *::before,
+#ts-coupon-lock-root *::after {
 	box-sizing: border-box;
 	border: 0 solid #dce2df;
 }
-#coupon-lock-root {
+#ts-coupon-lock-root {
 	font-family: 'Schibsted Grotesk Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 	font-size: 14px;
 	line-height: 21px;
@@ -33,36 +33,36 @@
 	font-variant-numeric: tabular-nums;
 	margin: 20px 20px 0 0;
 }
-#coupon-lock-root h1,
-#coupon-lock-root h2,
-#coupon-lock-root h3,
-#coupon-lock-root p {
+#ts-coupon-lock-root h1,
+#ts-coupon-lock-root h2,
+#ts-coupon-lock-root h3,
+#ts-coupon-lock-root p {
 	margin: 0;
 	padding: 0;
 }
-#coupon-lock-root button,
-#coupon-lock-root input,
-#coupon-lock-root select {
+#ts-coupon-lock-root button,
+#ts-coupon-lock-root input,
+#ts-coupon-lock-root select {
 	font: inherit;
 	color: inherit;
 	margin: 0;
 }
-#coupon-lock-root button {
+#ts-coupon-lock-root button {
 	cursor: pointer;
 	background: none;
 }
-#coupon-lock-root a {
+#ts-coupon-lock-root a {
 	text-decoration: none;
 }
-#coupon-lock-root svg {
+#ts-coupon-lock-root svg {
 	display: block;
 	flex-shrink: 0;
 }
-#coupon-lock-root table {
+#ts-coupon-lock-root table {
 	border-collapse: collapse;
 	width: 100%;
 }
-#coupon-lock-root .tabular {
+#ts-coupon-lock-root .tabular {
 	font-variant-numeric: tabular-nums;
 }
 
@@ -71,8 +71,8 @@
 @keyframes ts-out { from { transform: translateX(0); } to { transform: translateX(100%); } }
 @keyframes ts-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes ts-fade-out { from { opacity: 1; } to { opacity: 0; } }
-#coupon-lock-root .ts-sheet[data-state='open'] { animation: ts-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
-#coupon-lock-root .ts-sheet[data-state='closed'] { animation: ts-out 0.24s cubic-bezier(0.4, 0, 1, 1) both; }
-#coupon-lock-root .ts-overlay[data-state='open'] { animation: ts-fade-in 0.32s both; }
-#coupon-lock-root .ts-overlay[data-state='closed'] { animation: ts-fade-out 0.24s both; }
-@media (prefers-reduced-motion: reduce) { #coupon-lock-root .ts-sheet, #coupon-lock-root .ts-overlay { animation: none !important; } }
+#ts-coupon-lock-root .ts-sheet[data-state='open'] { animation: ts-in 0.32s cubic-bezier(0.32, 0.72, 0, 1) both; }
+#ts-coupon-lock-root .ts-sheet[data-state='closed'] { animation: ts-out 0.24s cubic-bezier(0.4, 0, 1, 1) both; }
+#ts-coupon-lock-root .ts-overlay[data-state='open'] { animation: ts-fade-in 0.32s both; }
+#ts-coupon-lock-root .ts-overlay[data-state='closed'] { animation: ts-fade-out 0.24s both; }
+@media (prefers-reduced-motion: reduce) { #ts-coupon-lock-root .ts-sheet, #ts-coupon-lock-root .ts-overlay { animation: none !important; } }

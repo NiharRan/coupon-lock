@@ -2,11 +2,11 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { __ } from '@wordpress/i18n';
 
-/** Right-hand side panel (shadcn Sheet). Portals into #coupon-lock-root so the scoped Tailwind styles still apply. */
+/** Right-hand side panel (shadcn Sheet). Portals into #ts-coupon-lock-root so the scoped Tailwind styles still apply. */
 export function Sheet( { open, onClose, title, description, children, footer }: { open: boolean; onClose: () => void; title: React.ReactNode; description: string; children: React.ReactNode; footer?: React.ReactNode } ) {
 	return (
 		<Dialog.Root open={ open } onOpenChange={ ( o ) => ! o && onClose() }>
-			<Dialog.Portal container={ document.getElementById( 'coupon-lock-root' ) }>
+			<Dialog.Portal container={ document.getElementById( 'ts-coupon-lock-root' ) }>
 				<Dialog.Overlay className="ts-overlay fixed inset-0 z-[100000] bg-slate-900/40" />
 				<Dialog.Content className="ts-sheet fixed inset-y-0 right-0 z-[100001] flex w-full max-w-[560px] flex-col bg-white shadow-2xl focus:outline-none">
 					<div className="flex items-start justify-between gap-3 border-b border-line p-5">

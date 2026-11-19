@@ -39,12 +39,12 @@ Tested so far: `php tests/core-test.php`, `tests/wc-test.php` (WP-CLI, real WooC
 - Block and hold are mutually exclusive. If merchants want both (block known rings, hold the rest), the settings model needs a third state.
 - Hold only applies to coupons with "New customers only (Coupon Lock)" ticked. Orders without such a coupon are never held.
 - Admin-blocked rings refuse every coupon in both block and hold mode. Only the shield being fully off (both toggles off) disables them.
-- A gateway that calls `update_status('processing')` directly is reverted to on-hold (non-admin move to processing or completed on a `_coupon_lock_held` order). Verified in a browser with COD (gateway completes it, the plugin puts it back on hold). Cancelled, failed and refunded moves are allowed. Auto-complete plugins are reverted too; integrators can opt out with the `coupon_lock_keep_held` filter.
+- A gateway that calls `update_status('processing')` directly is reverted to on-hold (non-admin move to processing or completed on a `_ts_coupon_lock_held` order). Verified in a browser with COD (gateway completes it, the plugin puts it back on hold). Cancelled, failed and refunded moves are allowed. Auto-complete plugins are reverted too; integrators can opt out with the `ts_coupon_lock_keep_held` filter.
 - Hold checks matches at order creation only, not when an order later reaches processing or completed.
-- A held order is released when a user with `edit_shop_orders` changes its status away from on-hold; this clears `_coupon_lock_held`, so later payment webhooks do not hold it again.
+- A held order is released when a user with `edit_shop_orders` changes its status away from on-hold; this clears `_ts_coupon_lock_held`, so later payment webhooks do not hold it again.
 
 ## Roadmap items not started
 
 - Visual ring graph beyond the current connection map, auto-hold on suspicious orders by score, refund-abuse scoring.
-- Optional hosted engine and Pro features, WooCommerce.com Marketplace, link to the Twinspot Shopify app.
+- Optional hosted engine and Pro features, WooCommerce.com Marketplace, link to a Coupon Lock Shopify app.
 - Device fingerprinting: out of scope until there is a consent toggle.

@@ -18,12 +18,12 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const COUPON_LOCK_VERSION = '0.5.0';
+const TS_COUPON_LOCK_VERSION = '0.5.0';
 
 require __DIR__ . '/includes/autoload.php';
 
 register_activation_hook( __FILE__, array( \Coupon_Lock\Plugin::class, 'activate' ) );
-// On plugins_loaded so add-ons loaded after Lite can hook coupon_lock_modules.
+// On plugins_loaded so add-ons loaded after Lite can hook ts_coupon_lock_modules.
 add_action(
 	'plugins_loaded',
 	function () {

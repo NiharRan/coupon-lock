@@ -55,18 +55,18 @@ Many honest customers share an IP address (offices, mobile networks), so it is s
 
 Yes. Filters:
 
-* `coupon_lock_refuse_coupon` ( $refuse, $order_ids, $coupon ): return false to let a repeat shopper's coupon through.
-* `coupon_lock_refusal_message` ( $message, $coupon ): change the checkout error text.
-* `coupon_lock_hold_order` ( $hold, $order, $order_ids ): return false to skip holding an order.
-* `coupon_lock_keep_held` ( $keep, $order, $new_status ): return false to let another plugin (an auto-complete or fulfilment tool) move a held order out of on-hold.
-* `coupon_lock_track_order` ( $track, $order ): return false to keep an order out of the index.
-* `coupon_lock_modules` ( $modules ): add or remove plugin modules.
+* `ts_coupon_lock_refuse_coupon` ( $refuse, $order_ids, $coupon ): return false to let a repeat shopper's coupon through.
+* `ts_coupon_lock_refusal_message` ( $message, $coupon ): change the checkout error text.
+* `ts_coupon_lock_hold_order` ( $hold, $order, $order_ids ): return false to skip holding an order.
+* `ts_coupon_lock_keep_held` ( $keep, $order, $new_status ): return false to let another plugin (an auto-complete or fulfilment tool) move a held order out of on-hold.
+* `ts_coupon_lock_track_order` ( $track, $order ): return false to keep an order out of the index.
+* `ts_coupon_lock_modules` ( $modules ): add or remove plugin modules.
 
 Actions:
 
-* `coupon_lock_coupon_blocked` ( $code, $order_ids ): a coupon was refused at checkout.
-* `coupon_lock_order_held` ( $order, $order_ids ): an order is about to be put on hold.
-* `coupon_lock_ring_detected` ( $order, $order_ids ): an order was first linked to earlier orders. Also fires during the bulk import.
+* `ts_coupon_lock_coupon_blocked` ( $code, $order_ids ): a coupon was refused at checkout.
+* `ts_coupon_lock_order_held` ( $order, $order_ids ): an order is about to be put on hold.
+* `ts_coupon_lock_ring_detected` ( $order, $order_ids ): an order was first linked to earlier orders. Also fires during the bulk import.
 
 `$order_ids` are earlier orders that share email, phone or address with the shopper.
 

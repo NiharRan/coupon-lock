@@ -133,7 +133,7 @@ export function Settings( { saved, onSave }: { saved: SettingsData; onSave: ( s:
 						const on = mode === o.id;
 						return (
 							<label key={ o.id } className={ cn( 'flex cursor-pointer items-start gap-4 rounded-[14px] border bg-white p-5 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-primary has-[:focus-visible]:ring-offset-2', on ? 'border-ink shadow-[inset_0_0_0_1px_#132120]' : 'border-line hover:border-[#9AA5A2]' ) }>
-								<input type="radio" name="coupon-lock-mode" className="sr-only" checked={ on } onChange={ () => { setMode( o.id ); setMsg( null ); } } />
+								<input type="radio" name="ts-coupon-lock-mode" className="sr-only" checked={ on } onChange={ () => { setMode( o.id ); setMsg( null ); } } />
 								<span aria-hidden="true" className={ cn( 'mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px]', on ? 'border-ink bg-ink' : 'border-[#9AA5A2] bg-white' ) }>
 									{ on && <span className="h-2 w-2 rounded-full bg-white" /> }
 								</span>

@@ -16,7 +16,7 @@ use Coupon_Lock\Module;
 defined( 'ABSPATH' ) || exit;
 
 class CouponGuard implements Module {
-	const META = '_coupon_lock_first_order_only';
+	const META = '_ts_coupon_lock_first_order_only';
 
 	/** @var Edges */
 	private $edges;
@@ -64,8 +64,8 @@ class CouponGuard implements Module {
 	}
 
 	public function validate( $valid, $coupon ) {
-		$block = 'no' !== get_option( 'coupon_lock_enabled' );
-		$hold  = 'yes' === get_option( 'coupon_lock_hold_orders' );
+		$block = 'no' !== get_option( 'ts_coupon_lock_enabled' );
+		$hold  = 'yes' === get_option( 'ts_coupon_lock_hold_orders' );
 		if ( ! $valid || ( ! $block && ! $hold ) || ! WC()->customer ) {
 			return $valid;
 		}
@@ -87,11 +87,11 @@ class CouponGuard implements Module {
 		 * @param int[]      $ids    Earlier order ids linked to this shopper.
 		 * @param \WC_Coupon $coupon Coupon being validated.
 		 */
-		if ( ( $blocked || $ids ) && apply_filters( 'coupon_lock_refuse_coupon', true, $ids, $coupon ) ) {
+		if ( ( $blocked || $ids ) && apply_filters( 'ts_coupon_lock_refuse_coupon', true, $ids, $coupon ) ) {
 			$fixed = in_array( $coupon->get_discount_type(), array( 'fixed_cart', 'fixed_product' ), true );
 			if ( WC()->session ) {
 				WC()->session->set(
-					'coupon_lock_blocked_coupon',
+					'ts_coupon_lock_blocked_coupon',
 					array(
 						'code' => $coupon->get_code(),
 						'ids'  => array_map( 'intval', $ids ),
@@ -110,8 +110,8 @@ class CouponGuard implements Module {
 					'meta'    => $blocked ? array( 'why' => 'ring' ) : array(),
 				)
 			);
-			do_action( 'coupon_lock_coupon_blocked', $coupon->get_code(), $ids );
-			throw new \Exception( esc_html( apply_filters( 'coupon_lock_refusal_message', __( 'Sorry, this coupon is only for first-time customers.', 'coupon-lock' ), $coupon ) ) );
+			do_action( 'ts_coupon_lock_coupon_blocked', $coupon->get_code(), $ids );
+			throw new \Exception( esc_html( apply_filters( 'ts_coupon_lock_refusal_message', __( 'Sorry, this coupon is only for first-time customers.', 'coupon-lock' ), $coupon ) ) );
 		}
 		return $valid;
 	}

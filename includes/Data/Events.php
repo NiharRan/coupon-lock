@@ -12,7 +12,7 @@ defined( 'ABSPATH' ) || exit;
 
 class Events {
 	const DB_VERSION = '1';
-	const OPTION     = 'coupon_lock_events_db';
+	const OPTION     = 'ts_coupon_lock_events_db';
 	const KEEP_DAYS  = 30;
 
 	/** Filter values (event type or severity) to the event types they cover. */
@@ -28,7 +28,7 @@ class Events {
 
 	public function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'coupon_lock_events';
+		return $wpdb->prefix . 'ts_coupon_lock_events';
 	}
 
 	public function install(): void {
@@ -64,7 +64,7 @@ class Events {
 		global $wpdb;
 		$wpdb->query( "DROP TABLE IF EXISTS {$this->table()}" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.SchemaChange
 		delete_option( self::OPTION );
-		delete_transient( 'coupon_lock_pruned' );
+		delete_transient( 'ts_coupon_lock_pruned' );
 	}
 
 	/**
@@ -89,8 +89,8 @@ class Events {
 			return;
 		}
 		$wpdb->insert( $this->table(), $row ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
-		if ( ! get_transient( 'coupon_lock_pruned' ) ) {
-			set_transient( 'coupon_lock_pruned', 1, HOUR_IN_SECONDS );
+		if ( ! get_transient( 'ts_coupon_lock_pruned' ) ) {
+			set_transient( 'ts_coupon_lock_pruned', 1, HOUR_IN_SECONDS );
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$this->table()} WHERE created < %s", gmdate( 'Y-m-d H:i:s', time() - self::KEEP_DAYS * DAY_IN_SECONDS ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 	}

@@ -4,13 +4,13 @@
  * and orders that form rings, then checks the coupon guard. Not shipped (see .distignore).
  *
  * Run from the WordPress root:  wp eval-file wp-content/plugins/coupon-lock/scripts/seed-test-data.php
- * Re-running replaces the earlier seed (orders carry meta _coupon_lock_seed).
+ * Re-running replaces the earlier seed (orders carry meta _ts_coupon_lock_seed).
  */
 
 defined( 'ABSPATH' ) || exit;
 
-function coupon_lock_seed() {
-	foreach ( wc_get_orders( array( 'limit' => -1, 'meta_key' => '_coupon_lock_seed', 'meta_value' => 1, 'status' => array_keys( wc_get_order_statuses() ) ) ) as $old ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev seed script.
+function ts_coupon_lock_seed() {
+	foreach ( wc_get_orders( array( 'limit' => -1, 'meta_key' => '_ts_coupon_lock_seed', 'meta_value' => 1, 'status' => array_keys( wc_get_order_statuses() ) ) ) as $old ) { // phpcs:ignore WordPress.DB.SlowDBQuery -- dev seed script.
 		$old->delete( true );
 	}
 
@@ -30,7 +30,7 @@ function coupon_lock_seed() {
 		$c->set_code( $code );
 		$c->set_discount_type( $type );
 		$c->set_amount( $amount );
-		$c->update_meta_data( '_coupon_lock_first_order_only', $first );
+		$c->update_meta_data( '_ts_coupon_lock_first_order_only', $first );
 		$c->save();
 	}
 
@@ -65,7 +65,7 @@ function coupon_lock_seed() {
 			$o->apply_coupon( $coupon );
 		}
 		$o->calculate_totals();
-		$o->update_meta_data( '_coupon_lock_seed', 1 );
+		$o->update_meta_data( '_ts_coupon_lock_seed', 1 );
 		$o->save();
 		$o->update_status( $status );
 	}
@@ -95,4 +95,4 @@ function coupon_lock_seed() {
 	$check( 'missing details fail open', '', '', '', '', 'WELCOME15', true );
 }
 
-coupon_lock_seed();
+ts_coupon_lock_seed();

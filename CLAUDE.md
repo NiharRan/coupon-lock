@@ -1,6 +1,6 @@
 # Coupon Lock
 
-WooCommerce plugin that finds the one person behind many accounts ("rings") and blocks repeat welcome coupons at checkout. Goal: ship to WordPress.org as a free plugin, see if it makes money, and only then link it to the Twinspot Shopify app and a shared SaaS graph backend.
+WooCommerce plugin that finds the one person behind many accounts ("rings") and blocks repeat welcome coupons at checkout. Goal: ship to WordPress.org as a free plugin, see if it makes money, and only then link it to a Coupon Lock Shopify app and a shared SaaS graph backend.
 
 Background research: `docs/woocommerce-research.md` (competitors, pricing, GDPR, architecture).
 
@@ -8,18 +8,18 @@ Background research: `docs/woocommerce-research.md` (competitors, pricing, GDPR,
 
 - No external server calls. Everything runs inside the store.
 - `coupon-lock.php`: header, autoloader, activation hook, boot. Nothing else.
-- PHP layout (namespace `Coupon_Lock`, autoloaded from `includes/<Sub>/<Class>.php`): `Plugin` wires everything; `Module` interface (`register()` adds hooks); `Core/` pure logic (`Normalize`, `Rings`); `Data/` storage (`Edges` = all SQL, `Fingerprinter` = secret + hashing, `BlockLog` = blocked/allowed rings, `Events` = audit log table); `Features/` one hook module each (`OrderTracker`, `CouponGuard`, `Privacy`, `Compat`, plus `Importer` service); `Rest/` (`Routes`, `Overview`, `Activity`); `Admin/Page`. To add a feature: new class implementing `Module`, add it to `Plugin::modules()` (or the `coupon_lock_modules` filter). Constructor injection, no globals except `$wpdb` inside `Data/`.
-- Admin UI: React app in `src/` (shadcn-style components, Tailwind scoped to `#coupon-lock-root`, lucide icons, motion), built with `npm run build` into git-ignored `build/`. REST routes in `includes/Rest/`, mount point in `includes/Admin/Page.php`. Details: `docs/admin-ui-design.md`. Visual reference: `design/`.
+- PHP layout (namespace `Coupon_Lock`, autoloaded from `includes/<Sub>/<Class>.php`): `Plugin` wires everything; `Module` interface (`register()` adds hooks); `Core/` pure logic (`Normalize`, `Rings`); `Data/` storage (`Edges` = all SQL, `Fingerprinter` = secret + hashing, `BlockLog` = blocked/allowed rings, `Events` = audit log table); `Features/` one hook module each (`OrderTracker`, `CouponGuard`, `Privacy`, `Compat`, plus `Importer` service); `Rest/` (`Routes`, `Overview`, `Activity`); `Admin/Page`. To add a feature: new class implementing `Module`, add it to `Plugin::modules()` (or the `ts_coupon_lock_modules` filter). Constructor injection, no globals except `$wpdb` inside `Data/`.
+- Admin UI: React app in `src/` (shadcn-style components, Tailwind scoped to `#ts-coupon-lock-root`, lucide icons, motion), built with `npm run build` into git-ignored `build/`. REST routes in `includes/Rest/`, mount point in `includes/Admin/Page.php`. Details: `docs/admin-ui-design.md`. Visual reference: `design/`.
 - `includes/Core/`: pure PHP (no WordPress calls): email/phone/address normalization, HMAC hashing, ring detection (union-find over shared hashes). Tested by `php tests/core-test.php`.
-- Activity Log screen: table `{prefix}coupon_lock_events` (30 days; order ids and coupon codes only, no hashes). Event types: `blocked` (CouponGuard), `clean` and `held` (OrderTracker::created), `ring` (OrderTracker::record, skipped on import), `import`, `rule` (block/allow ring). Ring and order links are resolved at read time. Whitelist = `allowed` rings in `BlockLog`; CouponGuard and hold mode skip them. The screen polls every 30s; each poll recomputes rings over all edges (fine to about 50k orders).
+- Activity Log screen: table `{prefix}ts_coupon_lock_events` (30 days; order ids and coupon codes only, no hashes). Event types: `blocked` (CouponGuard), `clean` and `held` (OrderTracker::created), `ring` (OrderTracker::record, skipped on import), `import`, `rule` (block/allow ring). Ring and order links are resolved at read time. Whitelist = `allowed` rings in `BlockLog`; CouponGuard and hold mode skip them. The screen polls every 30s; each poll recomputes rings over all edges (fine to about 50k orders).
 - `uninstall.php`: drops both tables and removes the secret.
-- Data: table `{prefix}coupon_lock_edges` (order_id, email_h, phone_h, addr_h, ip_h). All values are HMAC-SHA256 hashes keyed by the `coupon_lock_secret` option. IP is stored but never used to match (shared networks).
-- Coupon rule: coupon checkbox "New customers only (Coupon Lock)" (meta `_coupon_lock_first_order_only`) throws an exception in `woocommerce_coupon_is_valid` if email, phone or address matches an earlier order. Missing details match nothing, so it fails open.
+- Data: table `{prefix}ts_coupon_lock_edges` (order_id, email_h, phone_h, addr_h, ip_h). All values are HMAC-SHA256 hashes keyed by the `ts_coupon_lock_secret` option. IP is stored but never used to match (shared networks).
+- Coupon rule: coupon checkbox "New customers only (Coupon Lock)" (meta `_ts_coupon_lock_first_order_only`) throws an exception in `woocommerce_coupon_is_valid` if email, phone or address matches an earlier order. Missing details match nothing, so it fails open.
 - Orders are recorded on `woocommerce_checkout_order_created` (classic) and `woocommerce_store_api_checkout_order_processed` (blocks). Cancelled and failed orders are removed from the table.
 
 ## WordPress.org readiness
 
-Run `npm ci && npm run build` (type check: `npm run typecheck`) before testing the admin screen or zipping. Rules summary: `docs/wordpress-org-rules.md`. Done in v0.1.0: `coupon_lock_` prefix everywhere, `readme.txt`, full header, translatable strings (text domain `coupon-lock`), `ABSPATH` guards, privacy exporter, eraser and policy text, `.distignore` plus `scripts/build-zip.sh` (writes `dist/coupon-lock.zip`).
+Run `npm ci && npm run build` (type check: `npm run typecheck`) before testing the admin screen or zipping. Rules summary: `docs/wordpress-org-rules.md`. Done in v0.1.0: `ts_coupon_lock_` prefix everywhere, `readme.txt`, full header, translatable strings (text domain `coupon-lock`), `ABSPATH` guards, privacy exporter, eraser and policy text, `.distignore` plus `scripts/build-zip.sh` (writes `dist/coupon-lock.zip`).
 
 Still open before submitting:
 1. Confirm `Contributors` in `readme.txt` is the real WordPress.org username and `Tested up to` is the current WordPress major version.
@@ -44,7 +44,7 @@ Still open before submitting:
 2. Visual ring graph, auto-hold on suspicious orders, refund-abuse scoring.
 3. Optional hosted engine (opt-in, documented in readme) and Pro features living server-side, billed outside WordPress.org (Freemius or similar).
 4. WooCommerce.com Marketplace (70% to vendor) after reviews.
-5. Link to the Twinspot Shopify app through a shared identity graph, per-merchant by default.
+5. Link to a Coupon Lock Shopify app through a shared identity graph, per-merchant by default.
 
 ## Working rules
 

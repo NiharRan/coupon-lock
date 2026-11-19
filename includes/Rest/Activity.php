@@ -84,7 +84,7 @@ class Activity {
 			);
 		}
 		return array(
-			'filename' => 'coupon-lock-activity-' . gmdate( 'Y-m-d' ) . '.csv',
+			'filename' => 'ts-coupon-lock-activity-' . gmdate( 'Y-m-d' ) . '.csv',
 			'csv'      => $csv,
 		);
 	}

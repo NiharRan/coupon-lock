@@ -23,7 +23,7 @@ function download( ring: Ring ) {
 	const lines = [ 'order,date,status,total,coupons', ...ring.orders.map( ( o ) => [ o.id, o.date ?? '', q( o.status ), q( o.total ), q( o.coupons.join( ' ' ) ) ].join( ',' ) ) ];
 	const a = document.createElement( 'a' );
 	a.href = URL.createObjectURL( new Blob( [ lines.join( '\n' ) ], { type: 'text/csv' } ) );
-	a.download = `coupon-lock-ring-${ ring.orders[ 0 ]?.id ?? 'report' }.csv`;
+	a.download = `ts-coupon-lock-ring-${ ring.orders[ 0 ]?.id ?? 'report' }.csv`;
 	a.click();
 	URL.revokeObjectURL( a.href );
 }

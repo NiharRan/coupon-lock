@@ -12,7 +12,7 @@ import { Settings } from './screens/settings';
 import type { Filters, Overview as OverviewData, Tab } from './types';
 
 const RingDetail = lazy( () => import( './screens/ring-detail' ).then( ( m ) => ( { default: m.RingDetail } ) ) ); // Keeps the graph library out of the main bundle.
-const KEY = 'coupon_lock_view';
+const KEY = 'ts_coupon_lock_view';
 const TABS: Tab[] = [ 'overview', 'accounts', 'rules', 'activity', 'settings' ];
 const known = ( id: Tab ) => TABS.includes( id ) || extraTabs().some( ( t ) => t.id === id ); // Saved ids from a deactivated add-on fall back to overview.
 

@@ -12,7 +12,7 @@ use Coupon_Lock\Core\Normalize;
 defined( 'ABSPATH' ) || exit;
 
 class Fingerprinter {
-	const OPTION = 'coupon_lock_secret';
+	const OPTION = 'ts_coupon_lock_secret';
 
 	public function install(): void {
 		if ( ! get_option( self::OPTION ) ) {

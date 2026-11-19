@@ -1,6 +1,6 @@
-/** Scoped to #coupon-lock-root and no preflight, so wp-admin styles are never touched. */
+/** Scoped to #ts-coupon-lock-root and no preflight, so wp-admin styles are never touched. */
 module.exports = {
-	important: '#coupon-lock-root',
+	important: '#ts-coupon-lock-root',
 	corePlugins: { preflight: false },
 	content: [ './src/**/*.{js,jsx,ts,tsx}' ],
 	theme: {

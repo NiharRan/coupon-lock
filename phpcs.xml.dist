@@ -22,6 +22,6 @@
 		<properties><property name="text_domain" type="array"><element value="coupon-lock"/></property></properties>
 	</rule>
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
-		<properties><property name="prefixes" type="array"><element value="coupon_lock"/><element value="Coupon_Lock"/></property></properties>
+		<properties><property name="prefixes" type="array"><element value="ts_coupon_lock"/><element value="TS_COUPON_LOCK"/><element value="Coupon_Lock"/></property></properties>
 	</rule>
 </ruleset>

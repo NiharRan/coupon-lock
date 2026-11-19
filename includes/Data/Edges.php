@@ -17,11 +17,11 @@ class Edges {
 
 	/** Bump when the table columns or keys change; maybe_install() then runs dbDelta once. */
 	const DB_VERSION = '1';
-	const OPTION     = 'coupon_lock_edges_db';
+	const OPTION     = 'ts_coupon_lock_edges_db';
 
 	public function table(): string {
 		global $wpdb;
-		return $wpdb->prefix . 'coupon_lock_edges';
+		return $wpdb->prefix . 'ts_coupon_lock_edges';
 	}
 
 	public function install(): void {

@@ -66,7 +66,7 @@ class Privacy implements Module {
 			$items[] = array(
 				'group_id'    => 'coupon-lock',
 				'group_label' => __( 'Coupon Lock order fingerprints', 'coupon-lock' ),
-				'item_id'     => 'coupon-lock-' . $row['order_id'],
+				'item_id'     => 'ts-coupon-lock-' . $row['order_id'],
 				'data'        => array(
 					array(
 						'name'  => __( 'Order', 'coupon-lock' ),
