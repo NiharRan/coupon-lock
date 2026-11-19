@@ -35,7 +35,7 @@ class ProUpsell implements Module {
 			return;
 		}
 		$user_id = get_current_user_id();
-		if ( ! self::should_show( $user_id, defined( 'TWINSPOT_PRO_VERSION' ), (int) get_user_meta( $user_id, self::META, true ) ) ) {
+		if ( ! self::should_show( $user_id, defined( 'TS_COUPON_LOCK_PRO_VERSION' ), (int) get_user_meta( $user_id, self::META, true ) ) ) {
 			return;
 		}
 		$dismiss = wp_nonce_url( admin_url( 'admin-post.php?action=' . self::ACTION ), self::ACTION );
