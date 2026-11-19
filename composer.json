@@ -1,6 +1,6 @@
 {
-  "name": "twinspot/twinspot-lite",
-  "description": "Dev tooling for Twinspot Lite (static analysis only).",
+  "name": "niharran/coupon-lock",
+  "description": "Dev tooling for Coupon Lock (static analysis only).",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "require-dev": {

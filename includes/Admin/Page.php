@@ -2,17 +2,17 @@
 /**
  * Admin screen: mounts the React app (source in src/, built to build/).
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Admin;
+namespace Coupon_Lock\Admin;
 
-use Twinspot_Lite\Module;
+use Coupon_Lock\Module;
 
 defined( 'ABSPATH' ) || exit;
 
 class Page implements Module {
-	const HOOK = 'woocommerce_page_twinspot-lite';
+	const HOOK = 'woocommerce_page_coupon-lock';
 
 	/** @var string Plugin root, with trailing slash. */
 	private $dir;
@@ -27,7 +27,7 @@ class Page implements Module {
 	}
 
 	public function add_menu(): void {
-		add_submenu_page( 'woocommerce', 'Twinspot', 'Twinspot', 'manage_woocommerce', 'twinspot-lite', array( $this, 'render' ) );
+		add_submenu_page( 'woocommerce', 'Coupon Lock', 'Coupon Lock', 'manage_woocommerce', 'coupon-lock', array( $this, 'render' ) );
 	}
 
 	public function enqueue( $hook ): void {
@@ -36,10 +36,10 @@ class Page implements Module {
 			return;
 		}
 		$asset = require $asset_file;
-		$url   = plugins_url( 'build/', $this->dir . 'twinspot-lite.php' );
-		wp_enqueue_script( 'twinspot-lite-admin', $url . 'index.js', apply_filters( 'twinspot_lite_admin_script_deps', $asset['dependencies'] ), $asset['version'], true );
-		wp_enqueue_style( 'twinspot-lite-admin', $url . 'style-index.css', array(), $asset['version'] );
-		wp_set_script_translations( 'twinspot-lite-admin', 'twinspot-lite' );
+		$url   = plugins_url( 'build/', $this->dir . 'coupon-lock.php' );
+		wp_enqueue_script( 'coupon-lock-admin', $url . 'index.js', apply_filters( 'coupon_lock_admin_script_deps', $asset['dependencies'] ), $asset['version'], true );
+		wp_enqueue_style( 'coupon-lock-admin', $url . 'style-index.css', array(), $asset['version'] );
+		wp_set_script_translations( 'coupon-lock-admin', 'coupon-lock' );
 	}
 
 	public function render(): void {
@@ -47,9 +47,9 @@ class Page implements Module {
 			return;
 		}
 		if ( ! file_exists( $this->dir . 'build/index.asset.php' ) ) {
-			echo '<div class="wrap"><div class="notice notice-error"><p>' . esc_html__( 'Twinspot Lite admin files are missing. Reinstall the plugin.', 'twinspot-lite' ) . '</p></div></div>';
+			echo '<div class="wrap"><div class="notice notice-error"><p>' . esc_html__( 'Coupon Lock admin files are missing. Reinstall the plugin.', 'coupon-lock' ) . '</p></div></div>';
 			return;
 		}
-		echo '<div class="wrap"><div id="twinspot-root"></div></div>';
+		echo '<div class="wrap"><div id="coupon-lock-root"></div></div>';
 	}
 }

@@ -2,17 +2,17 @@
 /**
  * Turns raw customer details into keyed hashes. Owns the per-site secret.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Data;
+namespace Coupon_Lock\Data;
 
-use Twinspot_Lite\Core\Normalize;
+use Coupon_Lock\Core\Normalize;
 
 defined( 'ABSPATH' ) || exit;
 
 class Fingerprinter {
-	const OPTION = 'twinspot_lite_secret';
+	const OPTION = 'coupon_lock_secret';
 
 	public function install(): void {
 		if ( ! get_option( self::OPTION ) ) {

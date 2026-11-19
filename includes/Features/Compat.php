@@ -2,12 +2,12 @@
 /**
  * Declares HPOS and Cart/Checkout Blocks compatibility.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite\Features;
+namespace Coupon_Lock\Features;
 
-use Twinspot_Lite\Module;
+use Coupon_Lock\Module;
 
 defined( 'ABSPATH' ) || exit;
 

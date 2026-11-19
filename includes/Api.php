@@ -1,17 +1,17 @@
 <?php
 /**
- * Public PHP facade for add-ons (Twinspot Pro). Static, stable surface over the internal services.
+ * Public PHP facade for add-ons (Coupon Lock Pro). Static, stable surface over the internal services.
  *
- * @package Twinspot_Lite
+ * @package Coupon_Lock
  */
 
-namespace Twinspot_Lite;
+namespace Coupon_Lock;
 
-use Twinspot_Lite\Data\BlockLog;
-use Twinspot_Lite\Data\Edges;
-use Twinspot_Lite\Data\Events;
-use Twinspot_Lite\Data\Fingerprinter;
-use Twinspot_Lite\Rest\Overview;
+use Coupon_Lock\Data\BlockLog;
+use Coupon_Lock\Data\Edges;
+use Coupon_Lock\Data\Events;
+use Coupon_Lock\Data\Fingerprinter;
+use Coupon_Lock\Rest\Overview;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -112,8 +112,8 @@ class Api {
 
 	/** Hold an order for review: flag, notify, move to on-hold. */
 	public static function hold_order( \WC_Order $order, string $note ): void {
-		$order->update_meta_data( '_twinspot_lite_held', '1' );
-		do_action( 'twinspot_lite_order_held', $order, array() );
+		$order->update_meta_data( '_coupon_lock_held', '1' );
+		do_action( 'coupon_lock_order_held', $order, array() );
 		$order->update_status( 'on-hold', $note );
 	}
 }
