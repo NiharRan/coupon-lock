@@ -14,7 +14,7 @@ Spot rings of linked accounts and block repeat welcome coupons at WooCommerce ch
 
 Some shoppers create many accounts to claim your first-order discount again and again. Coupon Lock for WooCommerce links orders that share an email, phone number or address, even through other orders, and lets you stop the repeat coupon at checkout.
 
-* **New customers only coupons.** Tick "New customers only (Coupon Lock)" on a coupon. If the shopper's email, phone or address matches an earlier order, the coupon is refused. Gmail dots and `+tags` are treated as the same address.
+* **Per-coupon rules.** Choose which details a coupon checks: email, phone, address or IP address. If the shopper matches an earlier order on any chosen rule, the coupon is refused. Gmail dots and `+tags` are treated as the same address. Set rules from the Rules tab or from the coupon's Usage restriction tab.
 * **Rings.** WooCommerce > Coupon Lock lists groups of orders linked to each other. A shares a phone with B and B shares an address with C, so all three show as one ring.
 * **Order notes.** An order that matches earlier orders gets a note naming them, with links to those orders and to the ring. When a coupon is refused, the order the shopper then places gets a "Coupon Lock System Alert" note naming the coupon.
 * **Hold for review.** Under Plugin Settings, switch from refusing the coupon to holding the order. The shopper keeps the discount, but the order is set to On hold until you release it by changing its status. Rings you block by hand stay refused.
@@ -31,7 +31,7 @@ Coupon Lock for WooCommerce stores one-way HMAC-SHA256 hashes of each order's bi
 1. Install and activate WooCommerce.
 2. Upload the plugin and activate it.
 3. Go to WooCommerce > Coupon Lock and click "Import past orders".
-4. Edit a coupon, open the Usage restriction tab and tick "New customers only (Coupon Lock)".
+4. Edit a coupon, open the Usage restriction tab and tick the Coupon Lock rules you want.
 
 == Frequently Asked Questions ==
 
@@ -47,9 +47,9 @@ Yes, if they reuse the same email (including Gmail aliases), phone number or str
 
 Instead of refusing a "new customers only" coupon, the order is placed with the discount and set to On hold, even if a payment gateway reports it paid. Change the status to release it. Blocking and holding are alternatives: only one is active at a time.
 
-= Why is IP address not used to block? =
+= Can I block by IP address? =
 
-Many honest customers share an IP address (offices, mobile networks), so it is stored but not used for matching.
+Many honest customers share an IP address (offices, mobile networks), so IP matching is off by default. Add the IP rule to a coupon only if you accept that risk.
 
 = Can developers change its behavior? =
 
@@ -77,6 +77,10 @@ The admin screen is a React app. The files in `build/` are compiled from the rea
 The build bundles these libraries, all GPL-compatible: @radix-ui/react-dialog, @xyflow/react, motion, clsx and tailwind-merge (MIT); d3-force and lucide-react (ISC); class-variance-authority (Apache-2.0). Their licenses are in the repository's `package-lock.json` and in each package on npm.
 
 == Changelog ==
+
+= Unreleased =
+* Choose per coupon which details to match: email, phone, address or IP address. Coupons that used "New customers only" keep matching email, phone and address.
+* The Rules tab lists every coupon, with search, filters and rule editing.
 
 = 0.5.0 =
 * A dismissible note about Coupon Lock Pro on the Coupon Lock screen.

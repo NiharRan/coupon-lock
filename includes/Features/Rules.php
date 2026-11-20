@@ -40,7 +40,7 @@ class Rules {
 				'label'       => __( 'IP address', 'coupon-lock' ),
 				'description' => __( 'Same IP address as an earlier order.', 'coupon-lock' ),
 				'column'      => 'ip_h',
-				'warning'     => __( 'Shared networks (offices, mobile carriers, households) may block innocent shoppers.', 'coupon-lock' ),
+				'warning'     => __( 'Shared networks (offices, mobile carriers, households) may block innocent shoppers, and a shopper can hide their IP. Use it alongside other rules.', 'coupon-lock' ),
 			),
 		);
 		/**
