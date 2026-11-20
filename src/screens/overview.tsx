@@ -89,7 +89,7 @@ export function RingsTable( { data, filters, setFilters, setPage, onOpen }: Tabl
 				<div className="relative w-full max-w-[280px]">
 					<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
 					<Input
-						className="w-full rounded pl-9 font-mono text-[12px]"
+						className="w-full pl-9"
 						placeholder={ __( 'Find an order or email', 'coupon-lock' ) }
 						value={ filters.search }
 						onChange={ ( e ) => setFilters( { search: e.target.value } ) }
@@ -105,12 +105,12 @@ export function RingsTable( { data, filters, setFilters, setPage, onOpen }: Tabl
 						type="button"
 						aria-pressed={ filters.link === id }
 						onClick={ () => setFilters( { link: id } ) }
-						className={ cn( 'h-7 rounded border px-2.5 font-mono text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', filters.link === id ? 'border-[#111] bg-[#111] text-white' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }
+						className={ cn( 'h-9 rounded border px-3 font-mono text-[11px] uppercase tracking-[0.06em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', filters.link === id ? 'border-[#111] bg-[#111] text-white' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }
 					>
 						{ label }
 					</button>
 				) ) }
-				<Select className="ml-auto h-7 rounded font-mono text-[11px]" value={ filters.min_size } onChange={ ( e ) => setFilters( { min_size: Number( e.target.value ) } ) } aria-label={ __( 'Ring size', 'coupon-lock' ) }>
+				<Select className="ml-auto" value={ filters.min_size } onChange={ ( e ) => setFilters( { min_size: Number( e.target.value ) } ) } aria-label={ __( 'Ring size', 'coupon-lock' ) }>
 					<option value={ 2 }>{ __( 'Any size', 'coupon-lock' ) }</option>
 					<option value={ 3 }>{ __( '3 or more orders', 'coupon-lock' ) }</option>
 					<option value={ 4 }>{ __( '4 or more orders', 'coupon-lock' ) }</option>
