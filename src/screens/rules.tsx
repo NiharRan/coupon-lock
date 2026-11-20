@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { AtSign, Home, Phone, Plus, Search, X } from 'lucide-react';
+import { AtSign, Home, Phone, Plus, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { Input, Select } from '../components/ui/input';
+import { SearchInput, Select } from '../components/ui/input';
 import { getCoupons, getRules, saveCouponRules, type Coupon, type RuleDef } from '../lib/api';
 import { cn } from '../lib/utils';
 import type { Overview } from '../types';
@@ -122,10 +122,7 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 								: __( 'Blocking is paused in Plugin Settings. Orders are still indexed.', 'coupon-lock' ) }
 						</p>
 					</div>
-					<div className="relative w-full max-w-[280px] flex items-center">
-						<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-						<Input className="w-full flex-1 pl-9" placeholder={ __( 'Find a coupon code', 'coupon-lock' ) } value={ search } onChange={ ( e ) => { setSearch( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Search coupons', 'coupon-lock' ) } />
-					</div>
+					<SearchInput className="w-full max-w-[280px]" placeholder={ __( 'Find a coupon code', 'coupon-lock' ) } value={ search } onChange={ ( e ) => { setSearch( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Search coupons', 'coupon-lock' ) } />
 				</div>
 
 				<div className="flex flex-wrap items-center gap-1.5">
@@ -154,7 +151,7 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 
 				{ error && <p className="m-0 font-mono text-[12px] text-[#FF5A1F]" role="alert">{ error }</p> }
 
-				<div className="overflow-hidden rounded border border-[#E5E5E0] bg-white">
+				<div className="border border-[#E5E5E0] bg-white">
 					{ coupons === null && ! error && <p className="m-0 px-5 py-10 text-center text-muted">…</p> }
 					{ coupons?.length === 0 && (
 						<p className="m-0 px-5 py-10 text-center text-muted">

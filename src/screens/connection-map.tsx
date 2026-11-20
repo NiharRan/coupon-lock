@@ -18,8 +18,8 @@ function OrderNode( { data }: NodeProps< Node< { label: string } > > ) {
 	return (
 		<div className="flex flex-col items-center gap-1">
 			<Handle type="target" position={ Position.Top } style={ hidden } />
-			<span className="flex h-11 w-11 items-center justify-center rounded-full bg-primary-tint text-primary shadow-sm"><ShoppingCart size={ 20 } /></span>
-			<span className="tabular rounded bg-white px-1.5 text-[11px] font-semibold text-ink shadow-sm">{ data.label }</span>
+			<span className="flex h-11 w-11 items-center justify-center rounded-full border border-[#111] bg-[#FAFAF7] text-[#111]"><ShoppingCart size={ 20 } /></span>
+			<span className="tabular px-1.5 font-mono text-[11px] font-semibold text-[#111]">{ data.label }</span>
 			<Handle type="source" position={ Position.Top } style={ hidden } />
 		</div>
 	);
@@ -30,10 +30,10 @@ function HubNode( { data }: NodeProps< Node< { type: string; label?: string; cou
 	return (
 		<div className="flex flex-col items-center gap-1">
 			<Handle type="target" position={ Position.Top } style={ hidden } />
-			<span className={ `flex items-center justify-center rounded-full shadow-sm ${ data.top ? 'h-14 w-14 bg-accent-soft text-[#B45309] ring-2 ring-accent' : 'h-11 w-11 bg-primary-tint text-primary' }` }>
+			<span className={ `flex items-center justify-center rounded-full border bg-[#FAFAF7] ${ data.top ? 'h-14 w-14 border-2 border-[#FF5A1F] text-[#FF5A1F]' : 'h-11 w-11 border-[#111] text-[#111]' }` }>
 				<Icon size={ data.top ? 24 : 20 } />
 			</span>
-			<span className={ `whitespace-nowrap rounded bg-white px-1.5 text-[11px] font-semibold shadow-sm ${ data.top ? 'text-[#B45309]' : 'text-ink' }` }>{ data.label ?? HUB_LABEL[ data.type ] ?? data.type } · { data.count }</span>
+			<span className={ `whitespace-nowrap px-1.5 font-mono text-[11px] font-semibold ${ data.top ? 'text-[#FF5A1F]' : 'text-[#111]' }` }>{ data.label ?? HUB_LABEL[ data.type ] ?? data.type } · { data.count }</span>
 			<Handle type="source" position={ Position.Top } style={ hidden } />
 		</div>
 	);
@@ -66,7 +66,7 @@ function GraphView( { ring, onRefresh }: { ring: RingDetail; onRefresh: () => Pr
 					id: `${ o }-${ h }`,
 					source: `o${ o }`,
 					target: h,
-					style: hub?.dashed ? { stroke: '#94A3B8', strokeWidth: 1.5, strokeDasharray: '3 4' } : top ? { stroke: '#F59E0B', strokeWidth: member ? 1.5 : 2.5, strokeDasharray: '6 4', opacity: member ? 0.6 : 1 } : { stroke: '#0F766E', strokeWidth: member ? 1 : 2, opacity: member ? 0.5 : 1 },
+					style: hub?.dashed ? { stroke: '#9A9A93', strokeWidth: 1.5, strokeDasharray: '3 4' } : top ? { stroke: '#FF5A1F', strokeWidth: member ? 1.5 : 2.5, strokeDasharray: '6 4', opacity: member ? 0.6 : 1 } : { stroke: '#111', strokeWidth: member ? 1 : 2, opacity: member ? 0.5 : 1 },
 				};
 			} );
 		},
@@ -98,23 +98,23 @@ function GraphView( { ring, onRefresh }: { ring: RingDetail; onRefresh: () => Pr
 		await onRefresh();
 		setRefreshing( false );
 	}, [ onRefresh ] );
-	const tool = 'rounded p-1 text-muted hover:bg-white hover:text-ink';
+	const tool = 'rounded p-1 text-[#706F6A] hover:text-[#FF5A1F]';
 
 	return (
-		<div ref={ box } className={ full ? 'flex h-full flex-col bg-white p-6' : '' }>
+		<div ref={ box } className={ full ? 'flex h-full flex-col bg-[#FAFAF7] p-6' : '' }>
 			<div className="mb-3 flex items-start justify-between">
 				<div>
-					<h2 className="flex items-center gap-1 text-[20px] font-semibold leading-7 text-ink"><Network size={ 20 } className="text-primary" />{ __( 'Connection map', 'coupon-lock' ) }</h2>
-					<p className="mt-0.5 text-[13px] leading-[18px] text-muted">{ sprintf( __( 'How these %d orders and customer identifiers intersect', 'coupon-lock' ), ring.size ) }</p>
+					<h2 className="flex items-center gap-1 text-[20px] font-medium leading-7 text-[#111]"><Network size={ 20 } />{ __( 'Connection map', 'coupon-lock' ) }</h2>
+					<p className="mt-0.5 text-[13px] leading-[18px] text-[#706F6A]">{ sprintf( __( 'How these %d orders and customer identifiers intersect', 'coupon-lock' ), ring.size ) }</p>
 				</div>
-				<div className="flex items-center gap-1 rounded-lg bg-info p-1">
+				<div className="flex items-center gap-1 border border-[#E5E5E0] p-1">
 					<button type="button" className={ tool } title={ __( 'Refresh', 'coupon-lock' ) } aria-label={ __( 'Refresh', 'coupon-lock' ) } onClick={ refresh } disabled={ refreshing }><RefreshCw size={ 18 } className={ refreshing ? 'animate-spin' : '' } /></button>
 					<button type="button" className={ tool } title={ full ? __( 'Exit full screen', 'coupon-lock' ) : __( 'Full screen', 'coupon-lock' ) } aria-label={ full ? __( 'Exit full screen', 'coupon-lock' ) : __( 'Full screen', 'coupon-lock' ) } onClick={ toggleFull }>{ full ? <Minimize size={ 18 } /> : <Maximize size={ 18 } /> }</button>
 				</div>
 			</div>
-			<div className={ `overflow-hidden rounded-xl bg-canvas ${ full ? 'min-h-0 flex-1' : 'h-[520px]' }` } role="img" aria-label={ __( 'Graph of orders and the details they share', 'coupon-lock' ) }>
+			<div className={ `overflow-hidden border-y border-[#E5E5E0] bg-[#FAFAF7] ${ full ? 'min-h-0 flex-1' : 'h-[520px]' }` } role="img" aria-label={ __( 'Graph of orders and the details they share', 'coupon-lock' ) }>
 				<ReactFlow nodes={ nodes } edges={ edges } nodeTypes={ nodeTypes } onNodesChange={ onNodesChange } nodesConnectable={ false } fitView proOptions={ { hideAttribution: true } } minZoom={ 0.3 } style={ { background: 'transparent' } }>
-					<Background gap={ 20 } size={ 1.5 } color="#94A3B8" style={ { opacity: 0.4 } } />
+					<Background gap={ 20 } size={ 1.5 } color="#E5E5E0" />
 				</ReactFlow>
 			</div>
 		</div>
