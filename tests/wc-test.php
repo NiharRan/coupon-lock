@@ -279,12 +279,42 @@ ts_check( ! in_array( $ipa->get_id(), $edges->matches( $h ), true ), 'default co
 ts_check( array() === $edges->matches( $h, 0, array( 'bogus; DROP' ) ), 'unknown column is skipped, no error' );
 ts_check( array() === $edges->matches( $fp->hashes( 'n@example.com', '', '', '', '' ), 0, array( 'ip_h' ) ), 'empty IP matches nothing' );
 
+
+// Per-coupon rules at checkout. $ipa (203.0.113.9) is an earlier order with a different email, phone and address.
+function ts_rule_coupon( $code, $rules, $legacy = '' ) {
+	$c = new WC_Coupon( wc_get_coupon_id_by_code( $code ) );
+	$c->set_code( $code );
+	$c->set_discount_type( 'fixed_cart' );
+	$c->set_amount( 10 );
+	if ( null !== $rules ) {
+		$c->update_meta_data( Coupon_Lock\Features\Rules::META, $rules );
+	}
+	$c->update_meta_data( '_ts_coupon_lock_first_order_only', $legacy );
+	$c->save();
+}
+ts_rule_coupon( 'TSIPONLY', array( 'ip' ) );
+ts_rule_coupon( 'TSEMAILONLY', array( 'email' ) );
+ts_rule_coupon( 'TSNORULES', array(), 'yes' );
+ts_rule_coupon( 'TSLEGACY', null, 'yes' );
+list( $ok ) = ts_apply( 'TSIPONLY', 'fresh.one@example.com', '', '', '', '203.0.113.9' );
+ts_check( ! $ok, 'ip rule refuses a shopper on an earlier order\'s IP' );
+list( $ok ) = ts_apply( 'TSIPONLY', 'fresh.one@example.com', '', '', '', '198.51.100.7' );
+ts_check( $ok, 'ip rule accepts a different IP' );
+list( $ok ) = ts_apply( 'TSEMAILONLY', 'fresh.one@example.com', '', '', '', '203.0.113.9' );
+ts_check( $ok, 'unselected ip rule does not refuse' );
+list( $ok ) = ts_apply( 'TSNORULES', 'ip.one@example.com', '', '', '', '203.0.113.9' );
+ts_check( $ok, 'empty rule list never refuses, even with the legacy flag on' );
+list( $ok ) = ts_apply( 'TSLEGACY', 'ip.one@example.com' );
+ts_check( ! $ok, 'legacy-flag coupon still refuses on an email match' );
+list( $ok ) = ts_apply( 'TSIPONLY', 'fresh.one@example.com', '', '', '', '' );
+ts_check( $ok, 'no IP available fails open' );
+
 // ---------------------------------------------------------------- done
 ts_clean();
 update_option( 'ts_coupon_lock_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
 update_option( 'ts_coupon_lock_hold_orders', $ts_saved[1] ? $ts_saved[1] : 'no' );
 $ts_product->delete( true );
-foreach ( array( 'TSFIRST', 'TSOPEN' ) as $code ) {
+foreach ( array( 'TSFIRST', 'TSOPEN', 'TSIPONLY', 'TSEMAILONLY', 'TSNORULES', 'TSLEGACY' ) as $code ) {
 	wp_delete_post( wc_get_coupon_id_by_code( $code ), true );
 }
 echo "\n" . ( $GLOBALS['ts_fail'] ? $GLOBALS['ts_fail'] . " FAILED\n" : "All passed\n" );
