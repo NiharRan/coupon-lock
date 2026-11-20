@@ -8,6 +8,7 @@
 namespace Coupon_Lock\Rest;
 
 use Coupon_Lock\Features\Importer;
+use Coupon_Lock\Features\Rules;
 use Coupon_Lock\Module;
 
 defined( 'ABSPATH' ) || exit;
@@ -179,6 +180,83 @@ class Routes implements Module {
 						'enabled' => 'no' !== get_option( 'ts_coupon_lock_enabled' ),
 						'hold'    => 'yes' === get_option( 'ts_coupon_lock_hold_orders' ),
 					);
+				},
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/rules',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => $permission,
+				'callback'            => function () {
+					$out = array();
+					foreach ( Rules::all() as $id => $rule ) {
+						$out[] = array(
+							'id'          => $id,
+							'label'       => $rule['label'],
+							'description' => $rule['description'],
+							'warning'     => $rule['warning'] ?? '',
+						);
+					}
+					return $out;
+				},
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/coupons',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => $permission,
+				'callback'            => function () {
+					$out = array();
+					foreach ( get_posts(
+						array(
+							'post_type'   => 'shop_coupon',
+							'post_status' => array( 'publish', 'draft', 'pending', 'future' ),
+							'numberposts' => 500, // shortcut: first 500 coupons only, add paging when a store has more.
+							'orderby'     => 'title',
+							'order'       => 'ASC',
+						)
+					) as $post ) {
+						$c     = new \WC_Coupon( $post->ID );
+						$out[] = array(
+							'id'     => $post->ID,
+							'code'   => $c->get_code(),
+							'type'   => $c->get_discount_type(),
+							'amount' => $c->get_amount(),
+							'status' => $post->post_status,
+							'rules'  => Rules::for_coupon( $c ),
+						);
+					}
+					return $out;
+				},
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/coupons/(?P<id>\\d+)',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => $permission,
+				'args'                => array(
+					'rules' => array(
+						'type'     => 'array',
+						'items'    => array( 'type' => 'string' ),
+						'required' => true,
+					),
+				),
+				'callback'            => function ( \WP_REST_Request $req ) {
+					$post = get_post( (int) $req['id'] );
+					if ( ! $post || 'shop_coupon' !== $post->post_type ) {
+						return new \WP_Error( 'ts_coupon_lock_no_coupon', __( 'Coupon not found.', 'coupon-lock' ), array( 'status' => 404 ) );
+					}
+					$c   = new \WC_Coupon( $post->ID );
+					$ids = Rules::clean( $req->get_param( 'rules' ) );
+					$c->update_meta_data( Rules::META, $ids );
+					$c->save();
+					return array( 'rules' => $ids );
 				},
 			)
 		);

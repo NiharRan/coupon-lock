@@ -45,21 +45,23 @@ class CouponGuard implements Module {
 		if ( ! $post ) {
 			return;
 		}
-		$c     = new \WC_Coupon( $post->ID );
-		$on    = 'yes' === $c->get_meta( self::META );
-		$chips = array( __( 'Normalized addresses', 'coupon-lock' ), __( 'Alias detection (+tag)', 'coupon-lock' ), __( 'Phone hashing', 'coupon-lock' ) );
+		$on = Rules::for_coupon( new \WC_Coupon( $post->ID ) );
 		echo '<div class="options_group"><div style="overflow:hidden;margin:12px;padding:12px 14px;border:1px solid #c3dcd8;border-radius:10px;background:#f0f7f6">';
-		echo '<label style="float:none;width:auto;margin:0;padding:0;font-weight:600"><input type="checkbox" style="float:none;margin:0 6px 0 0" name="' . esc_attr( self::META ) . '" value="yes" ' . checked( $on, true, false ) . ' /> ' . esc_html__( 'New customers only (Coupon Lock)', 'coupon-lock' ) . '</label> ';
-		echo '<span style="background:#9cf2e8;color:#00504a;border-radius:99px;padding:1px 8px;font-size:11px;font-weight:600">' . esc_html__( 'Coupon Lock Guard', 'coupon-lock' ) . '</span>';
-		echo '<p style="float:none;margin:6px 0 8px;padding:0">' . esc_html__( 'Block if the shopper’s email, phone or address matches any earlier order, even under another account or Gmail alias.', 'coupon-lock' ) . '</p>';
-		foreach ( $chips as $chip ) {
-			echo '<span style="display:inline-block;margin:0 6px 0 0;background:#e7eeff;border-radius:6px;padding:2px 8px;font-size:11px">' . esc_html( $chip ) . '</span>';
+		echo '<strong>' . esc_html__( 'Coupon Lock rules', 'coupon-lock' ) . '</strong>';
+		echo '<p style="float:none;margin:6px 0 8px;padding:0">' . esc_html__( 'Refuse this coupon when the shopper matches an earlier order on any ticked detail, even under another account or Gmail alias.', 'coupon-lock' ) . '</p>';
+		foreach ( Rules::all() as $id => $rule ) {
+			echo '<label style="float:none;width:auto;display:block;margin:4px 0;padding:0"><input type="checkbox" style="float:none;margin:0 6px 0 0" name="' . esc_attr( Rules::META ) . '[]" value="' . esc_attr( $id ) . '" ' . checked( in_array( $id, $on, true ), true, false ) . ' /> <strong>' . esc_html( $rule['label'] ) . '</strong> ' . esc_html( $rule['description'] );
+			if ( ! empty( $rule['warning'] ) ) {
+				echo ' <em>' . esc_html( $rule['warning'] ) . '</em>';
+			}
+			echo '</label>';
 		}
 		echo '</div></div>';
 	}
 
 	public function save_field( $post_id, $coupon ): void {
-		$coupon->update_meta_data( self::META, isset( $_POST[ self::META ] ) ? 'yes' : 'no' ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- WooCommerce verifies the nonce before this action.
+		$ids = isset( $_POST[ Rules::META ] ) ? Rules::clean( wp_unslash( $_POST[ Rules::META ] ) ) : array(); // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- WooCommerce verifies the nonce before this action; ids are checked against the registry.
+		$coupon->update_meta_data( Rules::META, $ids );
 		$coupon->save();
 	}
 
@@ -70,16 +72,36 @@ class CouponGuard implements Module {
 			return $valid;
 		}
 		$c       = WC()->customer;
-		$h       = $this->fingerprinter->hashes( $c->get_billing_email(), $c->get_billing_phone(), $c->get_billing_address_1(), $c->get_billing_postcode() );
+		$h       = $this->fingerprinter->hashes( $c->get_billing_email(), $c->get_billing_phone(), $c->get_billing_address_1(), $c->get_billing_postcode(), \WC_Geolocation::get_ip_address() );
 		$blocked = $this->log->is_blocked( $h ); // Admin blocked this ring from every coupon.
 		if ( ! $blocked && $this->log->is_allowed( $h ) ) {
 			return $valid; // Admin allowed this ring (whitelist rule). A block always wins over an allow.
 		}
 		// Hold mode never refuses on the "new customers only" rule (OrderTracker holds the order), but admin-blocked rings stay refused.
-		if ( ! $blocked && ( ! $block || 'yes' !== $coupon->get_meta( self::META ) ) ) {
+		$rules = Rules::for_coupon( $coupon );
+		if ( ! $blocked && ( ! $block || ! $rules ) ) {
 			return $valid;
 		}
-		$ids = $this->edges->matches( $h ); // Empty details match nothing, so this fails open.
+		// Each selected rule compares its own column. Empty details match nothing, so this fails open.
+		$ids     = array();
+		$matched = array();
+		$all     = Rules::all();
+		foreach ( $rules as $rule ) {
+			// A rule either names an Edges hash column or supplies its own match callback (for signals Lite does not store).
+			$def   = $all[ $rule ];
+			$found = isset( $def['match'] ) && is_callable( $def['match'] )
+				? array_map( 'intval', (array) call_user_func( $def['match'], $h, $coupon ) )
+				: $this->edges->matches( $h, 0, array( (string) ( $def['column'] ?? '' ) ) );
+			if ( $found ) {
+				$matched[] = $rule;
+				$ids       = array_merge( $ids, $found );
+			}
+		}
+		$ids = array_slice( array_values( array_unique( $ids ) ), 0, 20 );
+		if ( ! $rules ) {
+			$ids     = $this->edges->matches( $h ); // Admin-blocked ring on a coupon with no rules: still link the earlier orders.
+			$matched = $this->edges->match_types( $h, $ids );
+		}
 		/**
 		 * Filters whether a repeat shopper's coupon is refused. Return false to let it through.
 		 *
@@ -105,7 +127,7 @@ class CouponGuard implements Module {
 				array(
 					'coupon'  => $coupon->get_code(),
 					'linked'  => $ids,
-					'matched' => $this->edges->match_types( $h, $ids ),
+					'matched' => $matched,
 					'amount'  => $amount,
 					'meta'    => $blocked ? array( 'why' => 'ring' ) : array(),
 				)

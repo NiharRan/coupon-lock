@@ -95,13 +95,16 @@ class Edges {
 	}
 
 	/**
-	 * Ids of other real orders sharing email, phone or address (IP is too weak to match on). Sample rows never match.
+	 * Ids of other real orders sharing a hash. By default email, phone or address (IP is too weak to link rings on); coupon rules may pass any
+	 * stored column, such as ip_h. Unknown columns are skipped. Sample rows never match.
+	 *
+	 * @param string[]|null $columns Hash columns to compare, or null for the ring link columns.
 	 */
-	public function matches( array $h, int $exclude = 0 ): array {
+	public function matches( array $h, int $exclude = 0, ?array $columns = null ): array {
 		global $wpdb;
 		$ids = array();
-		foreach ( array_keys( Rings::LINKS ) as $col ) {
-			if ( empty( $h[ $col ] ) ) {
+		foreach ( $columns ?? array_keys( Rings::LINKS ) as $col ) {
+			if ( ! in_array( $col, array( 'email_h', 'phone_h', 'addr_h', 'ip_h' ), true ) || empty( $h[ $col ] ) ) {
 				continue;
 			}
 			$found = $wpdb->get_col( $wpdb->prepare( 'SELECT order_id FROM %i WHERE order_id <> %d AND order_id < %d AND %i = %s LIMIT 20', $this->table(), $exclude, self::SAMPLE_BASE, $col, $h[ $col ] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery
