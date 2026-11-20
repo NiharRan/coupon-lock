@@ -309,6 +309,19 @@ ts_check( ! $ok, 'legacy-flag coupon still refuses on an email match' );
 list( $ok ) = ts_apply( 'TSIPONLY', 'fresh.one@example.com', '', '', '', '' );
 ts_check( $ok, 'no IP available fails open' );
 
+// REST: registry and per-coupon rules.
+wp_set_current_user( get_users( array( 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ) )[0] );
+$ts_rules = rest_do_request( new WP_REST_Request( 'GET', '/coupon-lock/v1/rules' ) )->get_data();
+$ts_ip    = array_values( array_filter( $ts_rules, fn( $r ) => 'ip' === $r['id'] ) );
+ts_check( 4 === count( $ts_rules ) && ! empty( $ts_ip[0]['warning'] ), 'GET /rules lists four rules and ip has a warning' );
+$ts_req = new WP_REST_Request( 'POST', '/coupon-lock/v1/coupons/' . wc_get_coupon_id_by_code( 'TSEMAILONLY' ) );
+$ts_req->set_body_params( array( 'rules' => array( 'ip', 'ip', 'nope', 'email' ) ) );
+ts_check( array( 'ip', 'email' ) === rest_do_request( $ts_req )->get_data()['rules'], 'POST /coupons/{id} dedupes and drops unknown ids' );
+ts_check( array( 'ip', 'email' ) === Coupon_Lock\Features\Rules::for_coupon( new WC_Coupon( wc_get_coupon_id_by_code( 'TSEMAILONLY' ) ) ), 'saved rules are stored on the coupon' );
+$ts_list = array_column( rest_do_request( new WP_REST_Request( 'GET', '/coupon-lock/v1/coupons' ) )->get_data(), null, 'code' );
+ts_check( array( 'email', 'phone', 'address' ) === $ts_list['tslegacy']['rules'], 'GET /coupons shows legacy-flag coupon as email, phone, address' );
+wp_set_current_user( 0 );
+
 // ---------------------------------------------------------------- done
 ts_clean();
 update_option( 'ts_coupon_lock_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
