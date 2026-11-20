@@ -47,7 +47,8 @@ class Events {
 			amount decimal(12,4) NOT NULL DEFAULT 0,
 			meta varchar(255) NOT NULL DEFAULT '',
 			PRIMARY KEY  (id),
-			KEY created (created), KEY type (type)
+			KEY created (created),
+			KEY type (type)
 		) {$wpdb->get_charset_collate()};"
 		);
 		update_option( self::OPTION, self::DB_VERSION, false );

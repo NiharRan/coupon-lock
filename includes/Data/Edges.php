@@ -36,7 +36,9 @@ class Edges {
 			addr_h varchar(64) NOT NULL DEFAULT '',
 			ip_h varchar(64) NOT NULL DEFAULT '',
 			PRIMARY KEY  (order_id),
-			KEY email_h (email_h), KEY phone_h (phone_h), KEY addr_h (addr_h)
+			KEY email_h (email_h),
+			KEY phone_h (phone_h),
+			KEY addr_h (addr_h)
 		) {$wpdb->get_charset_collate()};"
 		);
 		update_option( self::OPTION, self::DB_VERSION, false );
