@@ -2,10 +2,10 @@ import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
 	AtSign, Check, ChevronLeft, ChevronRight, Download, ExternalLink, FilterX, Home, Info, Lock, MapPin, Network,
-	Phone, Search, ShieldAlert, ShieldCheck, ShieldOff, Ticket, X,
+	Phone, ShieldAlert, ShieldCheck, ShieldOff, Ticket, X,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Input, Select } from '../components/ui/input';
+import { SearchInput, Select } from '../components/ui/input';
 import { Sheet } from '../components/ui/sheet';
 import { Spinner } from '../components/ui/spinner';
 import { allowRing, exportActivity, getActivity } from '../lib/api';
@@ -308,9 +308,9 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 				</div>
 			</div>
 
-			{ error && <div role="alert" className="rounded border border-[#FF5A1F] p-4 text-[#AE3200]">{ error }</div> }
+			{ error && <div role="alert" className="border-y border-[#FF5A1F] py-3 text-[#AE3200]">{ error }</div> }
 
-			<dl className="m-0 grid grid-cols-2 overflow-hidden rounded border border-[#E5E5E0] bg-white md:grid-cols-4">
+			<dl className="m-0 grid grid-cols-2 border border-[#E5E5E0] bg-white md:grid-cols-4">
 				<Stat n={ 1 } label={ sprintf( __( 'Total events (%s)', 'coupon-lock' ), rangeName ) } value={ s?.total ?? 0 } unit={ __( 'all triggers', 'coupon-lock' ) } hint={ __( '● Live, refreshes every 30s', 'coupon-lock' ) } />
 				<Stat n={ 2 } label={ __( 'Coupons evaluated', 'coupon-lock' ) } value={ s?.evaluated ?? 0 } unit={ __( 'at checkout', 'coupon-lock' ) } hint={ sprintf( _n( 'Across %d coupon code', 'Across %d coupon codes', s?.coupons ?? 0, 'coupon-lock' ), s?.coupons ?? 0 ) } />
 				<Stat n={ 3 } label={ __( 'Discounts blocked', 'coupon-lock' ) } value={ s?.blocked ?? 0 } unit={ __( 'repeat tries', 'coupon-lock' ) } accent hint={ s?.saved ? sprintf( __( 'Saved ~%s margin', 'coupon-lock' ), s.saved ) : __( 'Fixed-amount savings only', 'coupon-lock' ) } />
@@ -319,10 +319,7 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 
 			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex min-w-[240px] flex-1 flex-wrap items-center gap-3">
-					<div className="relative min-w-[240px] flex-1">
-						<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#706F6A]" />
-						<Input className="w-full pl-9" value={ f.search } onChange={ ( e ) => change( { search: e.target.value } ) } placeholder={ __( 'Filter by order # or coupon code…', 'coupon-lock' ) } aria-label={ __( 'Search events', 'coupon-lock' ) } />
-					</div>
+					<SearchInput className="min-w-[240px] flex-1" value={ f.search } onChange={ ( e ) => change( { search: e.target.value } ) } placeholder={ __( 'Filter by order # or coupon code…', 'coupon-lock' ) } aria-label={ __( 'Search events', 'coupon-lock' ) } />
 					<Select value={ f.type } onChange={ ( e ) => change( { type: e.target.value } ) } aria-label={ __( 'Event type', 'coupon-lock' ) }>
 						<option value="">{ __( 'All event types', 'coupon-lock' ) }</option>
 						<option value="blocked">{ __( 'Coupon Blocked', 'coupon-lock' ) }</option>
@@ -345,7 +342,7 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 				</div>
 			</div>
 
-			<div className="overflow-hidden rounded border border-[#E5E5E0] bg-white">
+			<div className="border border-[#E5E5E0] bg-white">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left">
 						<thead>

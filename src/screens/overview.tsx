@@ -1,12 +1,11 @@
 import { createInterpolateElement, useEffect, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { motion } from 'motion/react';
-import { AlertTriangle, CheckCircle2, ChevronRight, FlaskConical, Lock, RefreshCw, Search, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, FlaskConical, Lock, RefreshCw, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
 import { Spinner } from '../components/ui/spinner';
 import { Badge } from '../components/ui/badge';
-import { Input, Select } from '../components/ui/input';
+import { SearchInput, Select } from '../components/ui/input';
 import { getActivity } from '../lib/api';
 import { cn } from '../lib/utils';
 import { ago, describe } from './activity';
@@ -28,7 +27,7 @@ const SHOWN = 3; // Order links per row before "and N more".
 export const MONO = 'font-mono uppercase tracking-[0.06em]';
 
 /** Twin-dot motif: solid ink beside signal orange. */
-function TwinDot( { className }: { className?: string } ) {
+export function TwinDot( { className }: { className?: string } ) {
 	return (
 		<span className={ cn( 'inline-flex shrink-0 items-center gap-[3px]', className ) } aria-hidden="true">
 			<span className="h-1.5 w-1.5 rounded-full bg-[#111]" />
@@ -39,6 +38,20 @@ function TwinDot( { className }: { className?: string } ) {
 
 export function SectionLabel( { children }: { children: React.ReactNode } ) {
 	return <div className={ cn( MONO, 'flex items-center gap-2 text-[12px] font-semibold text-[#111]' ) }><TwinDot />{ children }</div>;
+}
+
+/** Scroll reveal: fade plus 12px rise. MotionConfig in app.tsx drops the motion for prefers-reduced-motion. */
+function Reveal( { children, className }: { children: React.ReactNode; className?: string } ) {
+	return (
+		<motion.div className={ className } initial={ { opacity: 0, y: 12 } } whileInView={ { opacity: 1, y: 0 } } viewport={ { once: true, margin: '0px 0px -40px 0px' } } transition={ { duration: 0.25, ease: 'easeOut' } }>
+			{ children }
+		</motion.div>
+	);
+}
+
+/** Arrow glyph for links and rows: turns orange and slides right when the parent `group` is hovered. */
+function Arrow() {
+	return <ArrowRight size={ 14 } className="transition-[transform,color] duration-200 group-hover:translate-x-1 group-hover:text-[#FF5A1F] group-focus-visible:translate-x-1 group-focus-visible:text-[#FF5A1F]" />;
 }
 
 /** Ring size to a level: a word plus badge and glyph style, so it never relies on colour alone. */
@@ -86,16 +99,12 @@ export function RingsTable( { data, filters, setFilters, setPage, onOpen }: Tabl
 <h2 id="ts-coupon-lock-rings" className="m-0"><SectionLabel>{ __( '01 / Linked rings', 'coupon-lock' ) }</SectionLabel></h2>
 <p className="mt-1.5 text-[13px] text-[#706F6A]">{ __( 'Orders that share an email, phone or delivery address.', 'coupon-lock' ) }</p>
 </div>
-				<div className="relative w-full max-w-[280px]">
-					<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-					<Input
-						className="w-full pl-9"
+				<SearchInput className="w-full max-w-[280px]"
 						placeholder={ __( 'Find an order or email', 'coupon-lock' ) }
 						value={ filters.search }
 						onChange={ ( e ) => setFilters( { search: e.target.value } ) }
 						aria-label={ __( 'Search rings', 'coupon-lock' ) }
 					/>
-				</div>
 			</div>
 
 			<div className="flex flex-wrap items-center gap-1.5">
@@ -118,7 +127,7 @@ export function RingsTable( { data, filters, setFilters, setPage, onOpen }: Tabl
 				</Select>
 			</div>
 
-			<div className="overflow-hidden rounded border border-[#E5E5E0] bg-white">
+			<div className="border border-[#E5E5E0] bg-white">
 				{ rings.length === 0 && (
 					<div className="px-5 py-10 text-center text-muted">
 						<p>{ __( 'No rings match these filters.', 'coupon-lock' ) }</p>
@@ -130,8 +139,8 @@ export function RingsTable( { data, filters, setFilters, setPage, onOpen }: Tabl
 						const lv = level( ring.size );
 						const more = ring.orders.length - SHOWN;
 						return (
-							<li key={ ring.orders.map( ( o ) => o.id ).join( '-' ) } className="m-0 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[#E5E5E0] px-5 py-5 last:border-b-0 hover:bg-[#F4F4F1]">
-<span className="flex h-10 w-10 shrink-0 items-center justify-center rounded border border-[#E5E5E0] bg-[#F9F9F6]">{ lv.glyph }</span>
+							<li key={ ring.orders.map( ( o ) => o.id ).join( '-' ) } className="group m-0 flex flex-wrap items-center gap-x-5 gap-y-2 border-b border-[#E5E5E0] px-5 py-5 last:border-b-0 hover:bg-[#F4F4F1]">
+<span className="flex h-10 w-10 shrink-0 items-center justify-center">{ lv.glyph }</span>
 								<div className="flex min-w-0 flex-[1_1_220px] flex-col gap-2">
 									<div className="flex flex-wrap items-baseline gap-x-2.5">
 										<button type="button" onClick={ () => onOpen( ring.key ) } className="text-left text-[16px] font-medium tracking-[-0.01em] hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F]">
@@ -158,7 +167,7 @@ export function RingsTable( { data, filters, setFilters, setPage, onOpen }: Tabl
 									<span className="font-mono text-[13px] font-semibold">{ ring.total }</span>
 <span className="font-mono text-[11px] text-[#706F6A]">{ ring.last_order ? lastOrder( ring.last_order ) : '—' }</span>
 								</div>
-								<Button variant="ghost" className="w-10 px-0" onClick={ () => onOpen( ring.key ) } aria-label={ __( 'Open ring map', 'coupon-lock' ) }><ChevronRight size={ 18 } /></Button>
+								<Button variant="ghost" className="w-10 px-0" onClick={ () => onOpen( ring.key ) } aria-label={ __( 'Open ring map', 'coupon-lock' ) }><Arrow /></Button>
 							</li>
 						);
 					} ) }
@@ -182,8 +191,8 @@ function ProgressBar( { value }: { value: number } ) {
 	const pct = Math.round( value * 100 );
 	return (
 		<div className="w-full max-w-md" role="progressbar" aria-valuemin={ 0 } aria-valuemax={ 100 } aria-valuenow={ pct } aria-label={ __( 'Scan progress', 'coupon-lock' ) }>
-			<div className="h-1.5 overflow-hidden rounded-full bg-primary-tint">
-				<motion.div className="h-full rounded-full bg-primary" initial={ false } animate={ { width: `${ pct }%` } } transition={ { type: 'tween', ease: 'easeOut', duration: 0.5 } } />
+			<div className="h-px overflow-hidden bg-[#E5E5E0]">
+				<motion.div className="h-full bg-[#FF5A1F]"initial={ false } animate={ { width: `${ pct }%` } } transition={ { type: 'tween', ease: 'easeOut', duration: 0.5 } } />
 			</div>
 			<div className="mt-2 text-[13px] text-muted">{ sprintf( __( 'Scanning orders… %d%%', 'coupon-lock' ), pct ) }</div>
 		</div>
@@ -194,10 +203,10 @@ const HERO = 'm-0 max-w-[900px] text-[32px] font-medium leading-[38px] tracking-
 
 function Step( { n, active, title, children }: { n: number; active?: boolean; title: string; children: React.ReactNode } ) {
 	return (
-		<li className="m-0 flex gap-5 border-b border-line py-[22px]">
-			<span className={ cn( 'flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-bold', active ? 'bg-ink text-white' : 'border-[1.5px] border-[#9AA5A2] text-muted' ) }>{ n }</span>
+		<li className="m-0 flex gap-5 border-b border-[#E5E5E0] py-[22px]">
+			<span className={ cn( MONO, 'w-8 shrink-0 pt-1 text-[12px] font-semibold', active ? 'text-[#FF5A1F]' : 'text-[#9A9A93]' ) }>{ String( n ).padStart( 2, '0' ) }</span>
 			<div className="min-w-0 flex-1">
-				<h2 className="text-[17px] font-bold leading-6">{ title }</h2>
+				<h2 className="text-[17px] font-medium leading-6">{ title }</h2>
 				{ children }
 			</div>
 		</li>
@@ -226,20 +235,20 @@ function FirstRun( { onImport, onSample, onSettings, importing, progress }: { on
 					</Step>
 					<Step n={ 2 } title={ __( 'Guard a welcome coupon', 'coupon-lock' ) }>
 						<p className="mt-0.5 text-muted">{ __( 'Open a coupon and tick “New customers only (Coupon Lock)”.', 'coupon-lock' ) }</p>
-						<a className="mt-2 inline-block font-semibold text-primary hover:underline" href="edit.php?post_type=shop_coupon">{ __( 'Open coupons', 'coupon-lock' ) }</a>
+						<a className={ cn( MONO, 'group mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#111]' ) } href="edit.php?post_type=shop_coupon">{ __( 'Open coupons', 'coupon-lock' ) }<Arrow /></a>
 					</Step>
 					<Step n={ 3 } title={ __( 'Choose what happens at checkout', 'coupon-lock' ) }>
 						<p className="mt-0.5 text-muted">{ __( 'Refuse the coupon, or let the order through and hold it for your review.', 'coupon-lock' ) }</p>
-						<button type="button" className="mt-2 font-semibold text-primary hover:underline" onClick={ onSettings }>{ __( 'Open settings', 'coupon-lock' ) }</button>
+						<button type="button" className={ cn( MONO, 'group mt-2 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#111]' ) } onClick={ onSettings }>{ __( 'Open settings', 'coupon-lock' ) }<Arrow /></button>
 					</Step>
 				</ol>
 			</section>
-			<Card className="flex min-w-0 flex-[1_1_320px] flex-col gap-5 p-7">
-				<h2 className="text-[17px] font-bold leading-6">{ __( 'What a ring looks like', 'coupon-lock' ) }</h2>
+			<div className="flex min-w-0 flex-[1_1_320px] flex-col gap-5 border-t border-[#E5E5E0] pt-5">
+				<h2 className="m-0"><SectionLabel>{ __( '02 / What a ring looks like', 'coupon-lock' ) }</SectionLabel></h2>
 				<svg viewBox="0 0 300 200" width="100%" role="img" aria-label={ __( 'Three orders under different names, joined because two share an email and two share a delivery address', 'coupon-lock' ) } style={ { fontFamily: 'inherit' } }>
-					{ [ [ 60, 46, 150, 66 ], [ 240, 46, 150, 66 ], [ 240, 46, 196, 150 ], [ 104, 166, 196, 150 ] ].map( ( [ x1, y1, x2, y2 ], i ) => <line key={ i } x1={ x1 } y1={ y1 } x2={ x2 } y2={ y2 } stroke="#B9D7CF" strokeWidth="1.6" /> ) }
-					{ [ [ 150, 66 ], [ 196, 150 ] ].map( ( [ x, y ], i ) => <circle key={ i } cx={ x } cy={ y } r="7" fill="#0F6E5E" /> ) }
-					{ [ [ 60, 46 ], [ 240, 46 ], [ 104, 166 ] ].map( ( [ x, y ], i ) => <circle key={ i } cx={ x } cy={ y } r="7" fill="#fff" stroke="#132120" strokeWidth="2" /> ) }
+					{ [ [ 60, 46, 150, 66 ], [ 240, 46, 150, 66 ], [ 240, 46, 196, 150 ], [ 104, 166, 196, 150 ] ].map( ( [ x1, y1, x2, y2 ], i ) => <line key={ i } x1={ x1 } y1={ y1 } x2={ x2 } y2={ y2 } stroke="#E5E5E0" strokeWidth="1.6" /> ) }
+					{ [ [ 150, 66 ], [ 196, 150 ] ].map( ( [ x, y ], i ) => <circle key={ i } cx={ x } cy={ y } r="7" fill="#FF5A1F" /> ) }
+					{ [ [ 60, 46 ], [ 240, 46 ], [ 104, 166 ] ].map( ( [ x, y ], i ) => <circle key={ i } cx={ x } cy={ y } r="7" fill="#FAFAF7" stroke="#111" strokeWidth="2" /> ) }
 					<text x="60" y="26" textAnchor="middle" fontSize="12" fontWeight="600" fill="#132120">Jo Park</text>
 					<text x="240" y="26" textAnchor="middle" fontSize="12" fontWeight="600" fill="#132120">J. Parker</text>
 					<text x="104" y="190" textAnchor="middle" fontSize="12" fontWeight="600" fill="#132120">Joanne P</text>
@@ -248,7 +257,7 @@ function FirstRun( { onImport, onSample, onSettings, importing, progress }: { on
 				</svg>
 				<p className="text-muted">{ __( 'Three names, one shopper. j.o.park+deal@gmail.com and jopark@gmail.com count as the same inbox.', 'coupon-lock' ) }</p>
 				<p className="border-t border-line pt-4 text-[13px] leading-[19px] text-muted">{ __( 'Details are kept as one-way hashes in your own database. Nothing is sent anywhere.', 'coupon-lock' ) }</p>
-			</Card>
+			</div>
 		</div>
 	);
 }
@@ -304,13 +313,13 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 	const notices = (
 		<>
 			{ error && (
-				<div role="alert" className="flex items-center gap-3 rounded-[10px] bg-danger-soft p-4 text-danger">
-					<AlertTriangle size={ 18 } />{ error }
+				<div role="alert" className="flex items-center gap-3 border-y border-[#E5E5E0] py-3 text-[#111]">
+					<AlertTriangle size={ 18 } className="text-[#FF5A1F]" />{ error }
 				</div>
 			) }
 			{ imported !== null && (
-				<div role="status" className="flex items-center gap-3 rounded-[10px] bg-success-soft p-4">
-					<CheckCircle2 size={ 20 } className="text-success" />
+				<div role="status" className="flex items-center gap-3 border-y border-[#E5E5E0] py-3">
+					<CheckCircle2 size={ 20 } className="text-[#111]" />
 					<div className="flex-1">
 						<strong>{ sprintf( _n( 'Scanned %1$d past order in %2$s seconds.', 'Scanned %1$d past orders in %2$s seconds.', imported.n, 'coupon-lock' ), imported.n, String( imported.seconds ) ) }</strong>
 						<p className="text-muted">{ data && data.stats.rings > 0 ? __( 'Linked orders are listed below.', 'coupon-lock' ) : __( 'No linked orders found. New orders are checked automatically.', 'coupon-lock' ) }</p>
@@ -322,7 +331,7 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 	);
 
 	if ( ! data ) {
-		return <div className="flex flex-col gap-5">{ notices }{ ! error && <Card><Spinner /></Card> }</div>;
+		return <div className="flex flex-col gap-5">{ notices }{ ! error && <Spinner /> }</div>;
 	}
 	if ( empty ) {
 		return <div className="flex flex-col gap-8">{ notices }<FirstRun onImport={ onImport } onSample={ onSample } onSettings={ onSettings } importing={ importing } progress={ progress } /></div>;
@@ -332,14 +341,14 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 	return (
 		<div className="flex flex-col gap-8">
 			{ ( error || imported !== null ) && <div className="flex flex-col gap-3">{ notices }</div> }
-			<section role="status" className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded border border-[#E5E5E0] border-l-[3px] border-l-[#FF5A1F] bg-white px-5 py-3">
+			<section role="status" className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b border-[#E5E5E0] pb-4">
 				<div className="flex items-center gap-3"><TwinDot /><Hero act={ act } /></div>
 				{ importing ? <ProgressBar value={ progress } /> : (
 					<Button variant="secondary" className="h-8 rounded border-[#111] bg-transparent font-mono text-[12px]" onClick={ onImport }><RefreshCw size={ 14 } />{ __( 'Scan past orders', 'coupon-lock' ) }</Button>
 				) }
 			</section>
 
-			<dl className="m-0 grid grid-cols-2 overflow-hidden rounded border border-[#E5E5E0] bg-white md:grid-cols-4">
+			<dl className="m-0 grid grid-cols-2 border border-[#E5E5E0] bg-white md:grid-cols-4">
 				<Figure n={ 1 } label={ __( 'Rings', 'coupon-lock' ) } value={ stats.rings } />
 				<Figure n={ 2 } label={ __( 'Accounts in rings', 'coupon-lock' ) } value={ stats.ring_customers } />
 				<Figure n={ 3 } label={ __( 'Orders in rings', 'coupon-lock' ) } value={ stats.orders_in_rings } of={ stats.indexed } />
@@ -347,7 +356,7 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 			</dl>
 
 			<div className="flex flex-wrap items-start gap-x-12 gap-y-10">
-				<div className="min-w-0 flex-[999_1_560px]"><RingsTable data={ data } filters={ filters } setFilters={ setFilters } setPage={ setPage } onOpen={ onOpen } /></div>
+				<Reveal className="min-w-0 flex-[999_1_560px]"><RingsTable data={ data } filters={ filters } setFilters={ setFilters } setPage={ setPage } onOpen={ onOpen } /></Reveal>
 				<aside className="flex min-w-0 flex-[1_1_300px] flex-col gap-5" aria-labelledby="ts-coupon-lock-latest">
 					<div className="border-b border-[#E5E5E0] pb-4">
 						<h2 id="ts-coupon-lock-latest" className="m-0"><SectionLabel>{ __( '02 / Latest checkouts', 'coupon-lock' ) }</SectionLabel></h2>
@@ -355,7 +364,7 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 					</div>
 					{ act && act.events.length === 0 && <p className="text-[#706F6A]">{ __( 'Nothing yet. Checkouts that use a guarded coupon show up here.', 'coupon-lock' ) }</p> }
 					{ act && act.events.length > 0 && (
-						<ol className="m-0 flex list-none flex-col gap-6 rounded border border-[#E5E5E0] bg-white p-5">
+						<ol className="m-0 flex list-none flex-col gap-6 p-0">
 							{ act.events.map( ( e ) => {
 								const d = describe( e );
 								const hot = e.type === 'blocked' || e.type === 'held' || e.type === 'ring';
@@ -370,7 +379,7 @@ export function Overview( { data, error, filters, setFilters, setPage, onOpen, i
 							} ) }
 						</ol>
 					) }
-					<div className="rounded border border-[#E5E5E0] bg-[#F4F4F1] p-4">
+					<div className="border-t border-[#E5E5E0] pt-4">
 						<div className="mb-2 flex items-center gap-2 font-mono text-[12px] font-semibold"><Lock size={ 14 } />{ __( 'Zero-exposure standard', 'coupon-lock' ) }</div>
 						<p className="m-0 font-mono text-[11px] leading-[18px] text-[#706F6A]">{ __( 'Emails, phones and addresses are kept as one-way hashes in your own database. Nothing is sent anywhere.', 'coupon-lock' ) }</p>
 					</div>

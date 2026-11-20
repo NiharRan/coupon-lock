@@ -147,7 +147,7 @@ export function App() {
 	return (
 		<MotionConfig reducedMotion="user">
 			<Header tab={ tab } setTab={ ( t ) => { setRingKey( null ); setTab( t ); } } enabled={ enabled } stats={ data?.stats } />
-			{ error && tab !== 'overview' && <div role="alert" className="mb-5 rounded-xl border border-danger-line bg-danger-soft p-4 text-danger">{ error }</div> }
+			{ error && tab !== 'overview' && <div role="alert" className="mb-5 border-y border-[#FF5A1F] py-3 text-[#AE3200]">{ error }</div> }
 			<motion.div key={ ringKey ?? tab } initial={ { opacity: 0, y: 8 } } animate={ { opacity: 1, y: 0 } } transition={ { duration: 0.22, ease: 'easeOut' } }>
 			{ ringKey !== null && <Suspense fallback={ <Spinner /> }><RingDetail orderId={ ringKey } onBack={ () => setRingKey( null ) } /></Suspense> }
 			{ ringKey === null && tab === 'overview' && (

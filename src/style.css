@@ -23,15 +23,18 @@
 #ts-coupon-lock-root *::before,
 #ts-coupon-lock-root *::after {
 	box-sizing: border-box;
-	border: 0 solid #dce2df;
+	border: 0 solid #E5E5E0;
 }
 #ts-coupon-lock-root {
 	font-family: 'Schibsted Grotesk Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
 	font-size: 14px;
 	line-height: 21px;
-	color: #132120;
+	color: #111;
 	font-variant-numeric: tabular-nums;
 	margin: 20px 20px 0 0;
+	background: #FAFAF7;
+	border: 1px solid #E5E5E0;
+	padding: 24px 28px;
 }
 #ts-coupon-lock-root h1,
 #ts-coupon-lock-root h2,
