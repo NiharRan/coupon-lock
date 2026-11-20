@@ -47,6 +47,23 @@
 	color: inherit;
 	margin: 0;
 }
+/* wp-admin gives inputs and selects their own height, line-height and shadow; take them back. */
+#ts-coupon-lock-root input,
+#ts-coupon-lock-root select {
+	min-height: 0;
+	line-height: normal;
+	box-shadow: none;
+	letter-spacing: inherit;
+}
+#ts-coupon-lock-root select {
+	appearance: none;
+	-webkit-appearance: none;
+	padding-right: 28px;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none' stroke='%23111' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 9px center;
+	background-size: 12px;
+}
 #ts-coupon-lock-root button {
 	cursor: pointer;
 	background: none;
