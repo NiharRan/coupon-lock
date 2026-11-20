@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import {
-	AtSign, BarChart3, Check, ChevronLeft, ChevronRight, Download, ExternalLink, FilterX, Home, Info, Lock, MapPin, Network,
+	AtSign, Check, ChevronLeft, ChevronRight, Download, ExternalLink, FilterX, Home, Info, Lock, MapPin, Network,
 	Phone, Search, ShieldAlert, ShieldCheck, ShieldOff, Ticket, X,
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
-import { Card } from '../components/ui/card';
 import { Input, Select } from '../components/ui/input';
 import { Sheet } from '../components/ui/sheet';
 import { Spinner } from '../components/ui/spinner';
 import { allowRing, exportActivity, getActivity } from '../lib/api';
 import { cn } from '../lib/utils';
+import { MONO, SectionLabel } from './overview';
 import type { Activity as ActivityData, ActivityEvent, ActivityFilters, EventType, LinkType, OrderRef } from '../types';
 
 const LIVE_MS = 30000;
@@ -27,17 +27,16 @@ const LABEL: Record< EventType, string > = {
 	import: __( 'Historical Import', 'coupon-lock' ),
 	rule: __( 'Rule Changed', 'coupon-lock' ),
 };
-const PILL: Record< EventType, string > = {
-	blocked: 'bg-danger-soft text-danger',
-	clean: 'bg-primary-soft text-primary',
-	ring: 'bg-accent-soft text-accent-ink',
-	held: 'bg-accent-soft text-accent-ink',
-	import: 'bg-primary-tint text-primary',
-	rule: 'bg-primary-tint text-primary',
-};
-const DOT: Record< EventType, string > = { blocked: 'bg-danger', clean: 'bg-primary', ring: 'bg-accent', held: 'bg-accent', import: 'bg-primary', rule: 'bg-primary' };
+const WARN = 'border-[#FF5A1F] text-[#AE3200]';
+const INK = 'border-[#E5E5E0] text-[#111]';
+const QUIET = 'border-[#E5E5E0] text-[#706F6A]';
+const PILL: Record< EventType, string > = { blocked: WARN, held: WARN, clean: INK, ring: INK, import: QUIET, rule: QUIET };
+const DOT: Record< EventType, string > = { blocked: 'bg-[#FF5A1F]', held: 'bg-[#FF5A1F]', clean: 'bg-[#111]', ring: 'bg-[#111]', import: 'bg-[#706F6A]', rule: 'bg-[#706F6A]' };
 const LINK_LABEL: Record< LinkType, string > = { email: __( 'email', 'coupon-lock' ), phone: __( 'phone', 'coupon-lock' ), address: __( 'delivery address', 'coupon-lock' ) };
 const LINK_ICON: Record< LinkType, typeof AtSign > = { email: AtSign, phone: Phone, address: Home };
+/** `matched` can carry add-on rule ids, so fall back to the raw id and a generic icon. */
+const linkLabel = ( m: string ) => LINK_LABEL[ m as LinkType ] ?? m;
+const linkIcon = ( m: string ) => LINK_ICON[ m as LinkType ] ?? Network;
 const ALL_LINKS: LinkType[] = [ 'email', 'phone', 'address' ];
 
 const list = ( items: string[] ) => items.join( ' & ' );
@@ -64,7 +63,7 @@ const clock = ( iso: string, utc = false ) => new Date( iso ).toLocaleTimeString
 /** Text shown in the table (trigger, outcome) for one event. */
 export function describe( e: ActivityEvent ) {
 	const n = e.linked.length;
-	const via = list( e.matched.map( ( m ) => LINK_LABEL[ m ] ) );
+	const via = list( e.matched.map( ( m ) => linkLabel( m ) ) );
 	const found = n ? sprintf( __( 'Found in Order %s', 'coupon-lock' ), orders( e.linked ) ) : __( 'Earlier orders are no longer indexed', 'coupon-lock' );
 	const saved = ( where: string ) => ( e.amount ? sprintf( __( 'Coupon applied (%1$s saved on %2$s)', 'coupon-lock' ), e.amount, where ) : sprintf( __( 'Coupon applied on %s', 'coupon-lock' ), where ) );
 	const where = e.order ? `#${ e.order.id }` : '';
@@ -74,28 +73,28 @@ export function describe( e: ActivityEvent ) {
 				title: e.meta.why === 'ring' ? __( 'Shopper belongs to a blocked ring', 'coupon-lock' ) : sprintf( __( 'Matched %s', 'coupon-lock' ), via ),
 				sub: found,
 				outcome: __( 'Coupon declined politely, full price charged', 'coupon-lock' ),
-				tone: 'text-danger',
+				tone: 'text-[#AE3200]',
 			};
 		case 'held':
 			return {
 				title: __( 'New-customers-only coupon used by a returning shopper', 'coupon-lock' ),
 				sub: found,
 				outcome: __( 'Order status set to “On hold”', 'coupon-lock' ),
-				tone: 'text-accent-ink',
+				tone: 'text-[#AE3200]',
 			};
 		case 'ring':
 			return {
 				title: sprintf( __( 'Order %1$s linked by %2$s', 'coupon-lock' ), where, via ),
 				sub: sprintf( _n( 'Linked to %d existing order', 'Linked to %d existing orders', n, 'coupon-lock' ), n ),
 				outcome: __( 'Cluster updated automatically', 'coupon-lock' ),
-				tone: 'text-muted',
+				tone: 'text-[#706F6A]',
 			};
 		case 'import':
 			return {
 				title: sprintf( __( 'Indexed %s past orders', 'coupon-lock' ), ( e.meta.orders ?? 0 ).toLocaleString() ),
 				sub: __( 'Local privacy-preserving hash compilation', 'coupon-lock' ),
 				outcome: __( 'Background task completed', 'coupon-lock' ),
-				tone: 'text-muted',
+				tone: 'text-[#706F6A]',
 			};
 		case 'rule': {
 			const a = e.meta.a ?? '';
@@ -108,7 +107,7 @@ export function describe( e: ActivityEvent ) {
 				}[ a ] ?? __( 'Ring rule changed', 'coupon-lock' ),
 				sub: sprintf( _n( 'Applies to %d linked order', 'Applies to %d linked orders', Math.max( n, 1 ), 'coupon-lock' ), Math.max( n, 1 ) ),
 				outcome: __( 'Merchant rule saved', 'coupon-lock' ),
-				tone: 'text-muted',
+				tone: 'text-[#706F6A]',
 			};
 		}
 		default: {
@@ -120,29 +119,30 @@ export function describe( e: ActivityEvent ) {
 				allowed: [ __( 'Ring is on the allow list', 'coupon-lock' ), found ],
 				late: [ __( 'Matched after the coupon was accepted', 'coupon-lock' ), found ],
 			}[ why ?? 'verified' ] ?? [ '', '' ];
-			return { title: t[ 0 ], sub: t[ 1 ], outcome: why === 'open' ? __( 'Allowed per coupon rule settings', 'coupon-lock' ) : saved( where ), tone: why === 'late' ? 'text-accent-ink' : 'text-primary' };
+			return { title: t[ 0 ], sub: t[ 1 ], outcome: why === 'open' ? __( 'Allowed per coupon rule settings', 'coupon-lock' ) : saved( where ), tone: why === 'late' ? 'text-[#AE3200]' : 'text-[#111]' };
 		}
 	}
 }
 
 function Pill( { type }: { type: EventType } ) {
 	return (
-		<span className={ cn( 'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-[11px] font-semibold', PILL[ type ] ) }>
+		<span className={ cn( MONO, 'inline-flex items-center gap-1.5 whitespace-nowrap rounded border bg-[#FAFAF7] px-2 py-0.5 text-[10px] font-medium tracking-[0.08em]', PILL[ type ] ) }>
 			<span className={ cn( 'h-1.5 w-1.5 rounded-full', DOT[ type ] ) } />{ LABEL[ type ] }
 		</span>
 	);
 }
 
-function Stat( { label, value, unit, hint, icon: Icon, tone }: { label: string; value: number; unit: string; hint: React.ReactNode; icon: typeof AtSign; tone?: string } ) {
+/** One cell of the overview-style figure strip. */
+function Stat( { n, label, value, unit, hint, accent }: { n: number; label: string; value: number; unit: string; hint: React.ReactNode; accent?: boolean } ) {
 	return (
-		<Card className="p-4">
-			<div className="flex items-center justify-between text-muted"><span className="font-medium">{ label }</span><Icon size={ 18 } className={ tone ?? 'text-primary' } /></div>
-			<div className="my-1 flex items-baseline gap-1.5">
-				<span className={ cn( 'tabular text-[24px] font-semibold leading-8', tone ) }>{ value.toLocaleString() }</span>
-				<span className={ cn( 'text-[11px] font-medium', tone ?? 'text-muted' ) }>{ unit }</span>
-			</div>
-			<div className={ cn( 'text-[11px] font-semibold', tone ?? 'text-primary' ) }>{ hint }</div>
-		</Card>
+		<div className="border-b border-r border-[#E5E5E0] p-6 md:border-b-0 [&:nth-child(2n)]:border-r-0 md:[&:nth-child(2n)]:border-r md:[&:last-child]:border-r-0">
+			<dt className={ cn( MONO, 'flex items-center justify-between text-[11px] text-[#706F6A]' ) }>{ label }<span className="text-[10px] text-[#9A9A93]">#{ String( n ).padStart( 2, '0' ) }</span></dt>
+			<dd className="m-0 mt-2 flex items-baseline gap-2">
+				<span className={ cn( 'tabular text-[36px] font-semibold leading-10 tracking-[-0.02em]', accent && 'text-[#FF5A1F]' ) }>{ value.toLocaleString() }</span>
+				<span className="font-mono text-[11px] text-[#706F6A]">{ unit }</span>
+			</dd>
+			<div className="mt-1 font-mono text-[11px] text-[#706F6A]">{ hint }</div>
+		</div>
 	);
 }
 
@@ -150,7 +150,7 @@ function Detail( { e, open, onOpen, onToggleAllow, onClose, busy }: { e: Activit
 	const d = describe( e );
 	const first = e.linked[ 0 ]?.date ? Math.max( 0, Math.round( ( Date.now() - new Date( e.linked[ 0 ].date as string ).getTime() ) / 864e5 ) ) : null;
 	const placed = first === null ? '' : sprintf( _n( ', placed %d day ago', ', placed %d days ago', first, 'coupon-lock' ), first );
-	const via = list( e.matched.map( ( m ) => LINK_LABEL[ m ] ) );
+	const via = list( e.matched.map( ( m ) => linkLabel( m ) ) );
 	const coupon = <strong>{ e.coupon }</strong>;
 	const heading = {
 		blocked: __( 'Why was this coupon declined?', 'coupon-lock' ),
@@ -176,18 +176,18 @@ function Detail( { e, open, onOpen, onToggleAllow, onClose, busy }: { e: Activit
 		body = d.title + '.';
 	}
 	const chips: React.ReactNode[] = e.matched.map( ( m ) => {
-		const Icon = m === 'address' ? MapPin : LINK_ICON[ m ];
-		return <span key={ m } className="inline-flex items-center gap-1.5 rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold"><Icon size={ 13 } />{ sprintf( __( 'Hash match: %s (HMAC-SHA256)', 'coupon-lock' ), LINK_LABEL[ m ] ) }</span>;
+		const Icon = m === 'address' ? MapPin : linkIcon( m );
+		return <span key={ m } className="inline-flex items-center gap-1.5 rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-1 font-mono text-[11px]"><Icon size={ 13 } />{ sprintf( __( 'Hash match: %s (HMAC-SHA256)', 'coupon-lock' ), linkLabel( m ) ) }</span>;
 	} );
 	if ( e.matched.length ) {
-		ALL_LINKS.filter( ( m ) => ! e.matched.includes( m ) ).forEach( ( m ) => chips.push( <span key={ 'x' + m } className="inline-flex items-center gap-1.5 rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold"><Check size={ 13 } />{ sprintf( __( '%s: varied', 'coupon-lock' ), LINK_LABEL[ m ].replace( /^./, ( c ) => c.toUpperCase() ) ) }</span> ) );
+		ALL_LINKS.filter( ( m ) => ! e.matched.includes( m ) ).forEach( ( m ) => chips.push( <span key={ 'x' + m } className="inline-flex items-center gap-1.5 rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-1 font-mono text-[11px]"><Check size={ 13 } />{ sprintf( __( '%s: varied', 'coupon-lock' ), linkLabel( m ).replace( /^./, ( c ) => c.toUpperCase() ) ) }</span> ) );
 	}
 	if ( e.meta.why === 'ring' ) {
-		chips.push( <span key="ring" className="inline-flex items-center gap-1.5 rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold"><ShieldOff size={ 13 } />{ __( 'Ring blocked by merchant', 'coupon-lock' ) }</span> );
+		chips.push( <span key="ring" className="inline-flex items-center gap-1.5 rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-1 font-mono text-[11px]"><ShieldOff size={ 13 } />{ __( 'Ring blocked by merchant', 'coupon-lock' ) }</span> );
 	}
 	e.linked.forEach( ( o ) => chips.push( o.url
-		? <a key={ o.id } href={ o.url } className="inline-flex items-center gap-1.5 rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold text-primary hover:underline"><Ticket size={ 13 } />{ sprintf( __( 'Order #%d', 'coupon-lock' ), o.id ) }<ExternalLink size={ 11 } /></a>
-		: <span key={ o.id } className="inline-flex items-center gap-1.5 rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold"><Ticket size={ 13 } />{ sprintf( __( 'Order #%d', 'coupon-lock' ), o.id ) }</span> ) );
+		? <a key={ o.id } href={ o.url } className="inline-flex items-center gap-1.5 rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-1 font-mono text-[11px] text-[#111] hover:text-[#FF5A1F]"><Ticket size={ 13 } />{ sprintf( __( 'Order #%d', 'coupon-lock' ), o.id ) }<ExternalLink size={ 11 } /></a>
+		: <span key={ o.id } className="inline-flex items-center gap-1.5 rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-1 font-mono text-[11px]"><Ticket size={ 13 } />{ sprintf( __( 'Order #%d', 'coupon-lock' ), o.id ) }</span> ) );
 	const stamp = new Date( e.created );
 	const header = <span className="flex flex-wrap items-center gap-2">{ sprintf( __( 'Event Audit Detail #EVT-%d', 'coupon-lock' ), e.id ) }<Pill type={ e.type } /></span>;
 	const sub = sprintf( __( 'Recorded %1$s at %2$s UTC', 'coupon-lock' ), stamp.toLocaleDateString( undefined, { timeZone: 'UTC' } ), clock( e.created, true ) );
@@ -202,28 +202,28 @@ function Detail( { e, open, onOpen, onToggleAllow, onClose, busy }: { e: Activit
 		<Sheet open={ open } onClose={ onClose } title={ header } description={ sub } footer={ footer }>
 			<div className="flex flex-col gap-5">
 				<div className="flex items-center gap-3">
-					<span className={ cn( 'flex h-10 w-10 items-center justify-center rounded-lg', PILL[ e.type ] ) }>{ e.type === 'blocked' ? <ShieldAlert size={ 20 } /> : <ShieldCheck size={ 20 } /> }</span>
-					<div><div className="font-semibold">{ d.title }</div><div className="text-[12px] text-muted">{ d.sub }</div></div>
+					<span className={ cn( 'flex h-10 w-10 items-center justify-center rounded border', PILL[ e.type ] ) }>{ e.type === 'blocked' ? <ShieldAlert size={ 20 } /> : <ShieldCheck size={ 20 } /> }</span>
+					<div><div className="font-semibold">{ d.title }</div><div className="text-[12px] text-[#706F6A]">{ d.sub }</div></div>
 				</div>
-				<div className="rounded-xl bg-info p-5">
+				<div className="rounded border border-[#E5E5E0] p-5">
 					<div className="flex gap-3">
-						<Info size={ 18 } className="mt-0.5 shrink-0 text-primary" />
+						<Info size={ 18 } className="mt-0.5 shrink-0 text-[#FF5A1F]" />
 						<div><div className="text-[16px] font-semibold leading-6">{ heading }</div><p className="mt-1 text-[15px] leading-[22px]">{ body }</p></div>
 					</div>
-					<div className="mt-4 rounded-lg bg-white p-3"><div className="text-[11px] text-muted">{ __( 'Local Privacy Guarantee', 'coupon-lock' ) }</div><div className="flex items-center gap-1.5 font-semibold text-primary"><Lock size={ 14 } />{ __( 'Zero data sent off-server', 'coupon-lock' ) }</div></div>
+					<div className="mt-4 border-t border-[#E5E5E0] pt-3"><div className={ cn( MONO, 'text-[10px] text-[#706F6A]' ) }>{ __( 'Local Privacy Guarantee', 'coupon-lock' ) }</div><div className="flex items-center gap-1.5 font-semibold text-[#111]"><Lock size={ 14 } />{ __( 'Zero data sent off-server', 'coupon-lock' ) }</div></div>
 				</div>
 				<dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-[13px]">
-					<div><dt className="text-muted">{ __( 'Coupon', 'coupon-lock' ) }</dt><dd className="font-mono font-medium">{ e.coupon ? e.coupon.toUpperCase() : '—' }</dd></div>
-					<div><dt className="text-muted">{ __( 'Outcome', 'coupon-lock' ) }</dt><dd className={ cn( 'font-medium', d.tone ) }>{ d.outcome }</dd></div>
-					{ e.ring && <div><dt className="text-muted">{ __( 'Ring', 'coupon-lock' ) }</dt><dd className="font-medium">{ sprintf( _n( '#%1$s (%2$d order)', '#%1$s (%2$d orders)', e.ring.size, 'coupon-lock' ), ringLabel( e.ring.key ), e.ring.size ) }{ e.ring.allowed && <span className="ml-1.5 text-primary">· { __( 'allowed', 'coupon-lock' ) }</span> }{ e.ring.blocked && <span className="ml-1.5 text-danger">· { __( 'blocked', 'coupon-lock' ) }</span> }</dd></div> }
-					{ e.amount && <div><dt className="text-muted">{ __( 'Discount', 'coupon-lock' ) }</dt><dd className="font-medium">{ e.amount }</dd></div> }
+					<div><dt className={ cn( MONO, 'text-[10px] text-[#706F6A]' ) }>{ __( 'Coupon', 'coupon-lock' ) }</dt><dd className="font-mono font-medium">{ e.coupon ? e.coupon.toUpperCase() : '—' }</dd></div>
+					<div><dt className={ cn( MONO, 'text-[10px] text-[#706F6A]' ) }>{ __( 'Outcome', 'coupon-lock' ) }</dt><dd className={ cn( 'font-medium', d.tone ) }>{ d.outcome }</dd></div>
+					{ e.ring && <div><dt className={ cn( MONO, 'text-[10px] text-[#706F6A]' ) }>{ __( 'Ring', 'coupon-lock' ) }</dt><dd className="font-medium">{ sprintf( _n( '#%1$s (%2$d order)', '#%1$s (%2$d orders)', e.ring.size, 'coupon-lock' ), ringLabel( e.ring.key ), e.ring.size ) }{ e.ring.allowed && <span className="ml-1.5 text-[#111]">· { __( 'allowed', 'coupon-lock' ) }</span> }{ e.ring.blocked && <span className="ml-1.5 text-[#AE3200]">· { __( 'blocked', 'coupon-lock' ) }</span> }</dd></div> }
+					{ e.amount && <div><dt className={ cn( MONO, 'text-[10px] text-[#706F6A]' ) }>{ __( 'Discount', 'coupon-lock' ) }</dt><dd className="font-medium">{ e.amount }</dd></div> }
 				</dl>
 				{ ( chips.length > 0 || e.type === 'import' ) && (
 					<div>
-						<div className="mb-2 text-[11px] text-muted">{ __( 'Attribute matches verified', 'coupon-lock' ) }</div>
+						<div className={ cn( MONO, 'mb-2 text-[10px] text-[#706F6A]' ) }>{ __( 'Attribute matches verified', 'coupon-lock' ) }</div>
 						<div className="flex flex-wrap gap-2">
 							{ chips }
-							{ e.type === 'import' && <span className="rounded-md bg-info px-2.5 py-1 text-[11px] font-semibold">{ sprintf( __( 'Orders indexed: %d', 'coupon-lock' ), e.meta.orders ?? 0 ) }</span> }
+							{ e.type === 'import' && <span className="rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-1 font-mono text-[11px]">{ sprintf( __( 'Orders indexed: %d', 'coupon-lock' ), e.meta.orders ?? 0 ) }</span> }
 						</div>
 					</div>
 				) }
@@ -291,38 +291,36 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 	};
 
 	return (
-		<div className="flex flex-col gap-5">
-			<div className="flex flex-wrap items-center justify-between gap-4">
+		<div className="flex flex-col gap-8">
+			<div className="flex flex-wrap items-end justify-between gap-4 border-b border-[#E5E5E0] pb-6">
 				<div>
-					<h1 className="flex items-center gap-3 text-[24px] font-semibold leading-8">
-						{ __( 'Coupon Lock Activity Log', 'coupon-lock' ) }
-						<span className="inline-flex items-center gap-1.5 rounded-full bg-primary-tint px-2.5 py-0.5 text-[11px] font-semibold text-primary"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />{ __( 'Audit Stream', 'coupon-lock' ) }</span>
-					</h1>
-					<p className="mt-0.5 text-[15px] text-muted">{ __( 'Audit stream of coupon checks, detected rings, and checkout decisions across your store.', 'coupon-lock' ) }</p>
+					<SectionLabel>{ __( 'Audit stream', 'coupon-lock' ) }</SectionLabel>
+					<h1 className="mt-3 text-[36px] font-semibold leading-[42px] tracking-[-0.02em]">{ __( 'Activity log', 'coupon-lock' ) }</h1>
+					<p className="mt-1.5 text-[15px] text-[#706F6A]">{ __( 'Audit stream of coupon checks, detected rings, and checkout decisions across your store.', 'coupon-lock' ) }</p>
 				</div>
 				<div className="flex flex-wrap items-center gap-2">
-					<div className="flex rounded-lg border border-line bg-white p-0.5" role="group" aria-label={ __( 'Time range', 'coupon-lock' ) }>
+					<div className="flex gap-1.5" role="group" aria-label={ __( 'Time range', 'coupon-lock' ) }>
 						{ RANGES.map( ( [ id, label ] ) => (
-							<button key={ id } type="button" aria-pressed={ f.range === id } onClick={ () => change( { range: id } ) } className={ cn( 'rounded px-3 py-1.5 text-[13px] font-medium', f.range === id ? 'bg-primary-soft text-ink' : 'text-muted hover:text-ink' ) }>{ label }</button>
+							<button key={ id } type="button" aria-pressed={ f.range === id } onClick={ () => change( { range: id } ) } className={ cn( MONO, 'h-9 rounded border px-3 text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', f.range === id ? 'border-[#111] bg-[#111] text-[#FAFAF7]' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }>{ label }</button>
 						) ) }
 					</div>
-					<Button variant="secondary" onClick={ download } disabled={ ! data?.total }><Download size={ 16 } />{ __( 'Export CSV log', 'coupon-lock' ) }</Button>
+					<Button variant="secondary" onClick={ download } disabled={ ! data?.total }><Download size={ 14 } />{ __( 'Export CSV', 'coupon-lock' ) }</Button>
 				</div>
 			</div>
 
-			{ error && <div role="alert" className="rounded-xl border border-danger-line bg-danger-soft p-4 text-danger">{ error }</div> }
+			{ error && <div role="alert" className="rounded border border-[#FF5A1F] p-4 text-[#AE3200]">{ error }</div> }
 
-			<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-				<Stat label={ sprintf( __( 'Total events (%s)', 'coupon-lock' ), rangeName ) } value={ s?.total ?? 0 } unit={ __( 'all triggers', 'coupon-lock' ) } icon={ BarChart3 } hint={ <>● { __( 'Live feed active (refreshes every 30s)', 'coupon-lock' ) }</> } />
-				<Stat label={ __( 'Coupons evaluated', 'coupon-lock' ) } value={ s?.evaluated ?? 0 } unit={ __( 'at checkout', 'coupon-lock' ) } icon={ Ticket } tone="text-muted" hint={ sprintf( _n( 'Across %d coupon code', 'Across %d coupon codes', s?.coupons ?? 0, 'coupon-lock' ), s?.coupons ?? 0 ) } />
-				<Stat label={ __( 'Discounts blocked', 'coupon-lock' ) } value={ s?.blocked ?? 0 } unit={ __( 'repeat tries', 'coupon-lock' ) } icon={ ShieldAlert } tone="text-danger" hint={ s?.saved ? sprintf( __( 'Saved ~%s margin', 'coupon-lock' ), s.saved ) : __( 'Fixed-amount savings only', 'coupon-lock' ) } />
-				<Stat label={ __( 'Auto-cleared legitimate', 'coupon-lock' ) } value={ s?.cleared ?? 0 } unit={ __( 'zero friction', 'coupon-lock' ) } icon={ ShieldCheck } hint={ sprintf( __( '%d%% instant approval', 'coupon-lock' ), rate ) } />
-			</div>
+			<dl className="m-0 grid grid-cols-2 overflow-hidden rounded border border-[#E5E5E0] bg-white md:grid-cols-4">
+				<Stat n={ 1 } label={ sprintf( __( 'Total events (%s)', 'coupon-lock' ), rangeName ) } value={ s?.total ?? 0 } unit={ __( 'all triggers', 'coupon-lock' ) } hint={ __( '● Live, refreshes every 30s', 'coupon-lock' ) } />
+				<Stat n={ 2 } label={ __( 'Coupons evaluated', 'coupon-lock' ) } value={ s?.evaluated ?? 0 } unit={ __( 'at checkout', 'coupon-lock' ) } hint={ sprintf( _n( 'Across %d coupon code', 'Across %d coupon codes', s?.coupons ?? 0, 'coupon-lock' ), s?.coupons ?? 0 ) } />
+				<Stat n={ 3 } label={ __( 'Discounts blocked', 'coupon-lock' ) } value={ s?.blocked ?? 0 } unit={ __( 'repeat tries', 'coupon-lock' ) } accent hint={ s?.saved ? sprintf( __( 'Saved ~%s margin', 'coupon-lock' ), s.saved ) : __( 'Fixed-amount savings only', 'coupon-lock' ) } />
+				<Stat n={ 4 } label={ __( 'Auto-cleared legitimate', 'coupon-lock' ) } value={ s?.cleared ?? 0 } unit={ __( 'zero friction', 'coupon-lock' ) } hint={ sprintf( __( '%d%% instant approval', 'coupon-lock' ), rate ) } />
+			</dl>
 
-			<Card className="flex flex-wrap items-center justify-between gap-3 p-4">
+			<div className="flex flex-wrap items-center justify-between gap-3">
 				<div className="flex min-w-[240px] flex-1 flex-wrap items-center gap-3">
 					<div className="relative min-w-[240px] flex-1">
-						<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+						<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#706F6A]" />
 						<Input className="w-full pl-9" value={ f.search } onChange={ ( e ) => change( { search: e.target.value } ) } placeholder={ __( 'Filter by order # or coupon code…', 'coupon-lock' ) } aria-label={ __( 'Search events', 'coupon-lock' ) } />
 					</div>
 					<Select value={ f.type } onChange={ ( e ) => change( { type: e.target.value } ) } aria-label={ __( 'Event type', 'coupon-lock' ) }>
@@ -342,16 +340,16 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 					</Select>
 				</div>
 				<div className="flex items-center gap-3">
-					<Button variant="ghost" onClick={ () => change( { search: '', type: '', severity: '' } ) } disabled={ ! filtering }><FilterX size={ 16 } />{ __( 'Clear filters', 'coupon-lock' ) }</Button>
-					<span className="tabular border-l border-line pl-3 text-[11px] font-semibold text-muted">{ sprintf( __( 'Showing %1$d of %2$d items', 'coupon-lock' ), events.length, data?.total ?? 0 ) }</span>
+					<Button variant="ghost" onClick={ () => change( { search: '', type: '', severity: '' } ) } disabled={ ! filtering }><FilterX size={ 14 } />{ __( 'Clear filters', 'coupon-lock' ) }</Button>
+					<span className="tabular border-l border-[#E5E5E0] pl-3 font-mono text-[11px] text-[#706F6A]">{ sprintf( __( 'Showing %1$d of %2$d items', 'coupon-lock' ), events.length, data?.total ?? 0 ) }</span>
 				</div>
-			</Card>
+			</div>
 
-			<Card className="overflow-hidden">
+			<div className="overflow-hidden rounded border border-[#E5E5E0] bg-white">
 				<div className="overflow-x-auto">
 					<table className="w-full text-left">
 						<thead>
-							<tr className="bg-info text-[11px] font-semibold uppercase tracking-wider text-muted">
+							<tr className={ cn( MONO, 'border-b border-[#E5E5E0] bg-[#F9F9F6] text-[10px] font-medium tracking-[0.08em] text-[#706F6A]' ) }>
 								{ [ __( 'Timestamp', 'coupon-lock' ), __( 'Event Type', 'coupon-lock' ), __( 'Coupon', 'coupon-lock' ), __( 'Trigger & Linked Evidence', 'coupon-lock' ), __( 'Ring Association', 'coupon-lock' ), __( 'Checkout Outcome', 'coupon-lock' ), __( 'Action', 'coupon-lock' ) ].map( ( h, i ) => (
 									<th key={ h } className={ cn( 'px-4 py-3', i === 6 && 'text-right' ) }>{ h }</th>
 								) ) }
@@ -360,30 +358,29 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 						<tbody>
 							{ data === null && ! error && <tr><td colSpan={ 7 }><Spinner /></td></tr> }
 							{ data !== null && events.length === 0 && (
-								<tr><td colSpan={ 7 } className="px-5 py-10 text-center text-muted">{ filtering ? __( 'No events match these filters.', 'coupon-lock' ) : __( 'No activity in this period yet. Events appear when shoppers use coupons, rings form, or you import orders.', 'coupon-lock' ) }</td></tr>
+								<tr><td colSpan={ 7 } className="px-5 py-10 text-center text-[#706F6A]">{ filtering ? __( 'No events match these filters.', 'coupon-lock' ) : __( 'No activity in this period yet. Events appear when shoppers use coupons, rings form, or you import orders.', 'coupon-lock' ) }</td></tr>
 							) }
 							{ events.map( ( e ) => {
 								const d = describe( e );
 								const on = e.id === selected?.id;
 								const order = e.type === 'clean' || e.type === 'held' ? e.order : null;
 								return (
-									<tr key={ e.id } onClick={ () => setPick( e.id ) } className={ cn( 'cursor-pointer border-t border-line hover:bg-primary-soft', on && 'bg-info' ) }>
-										<td className="whitespace-nowrap px-4 py-3"><div className="font-medium">{ ago( e.created ) }</div><div className="text-[11px] text-muted">{ clock( e.created ) }</div></td>
+									<tr key={ e.id } onClick={ () => setPick( e.id ) } className={ cn( 'cursor-pointer border-t border-[#E5E5E0] hover:bg-[#F4F4F1]', on && 'bg-[#F4F4F1]' ) }>
+										<td className="whitespace-nowrap px-4 py-3"><div className="font-medium">{ ago( e.created ) }</div><div className="font-mono text-[11px] text-[#706F6A]">{ clock( e.created ) }</div></td>
 										<td className="px-4 py-3"><Pill type={ e.type } /></td>
-										<td className="whitespace-nowrap px-4 py-3">{ e.coupon ? <span className="rounded bg-info px-2 py-0.5 font-mono font-medium">{ e.coupon.toUpperCase() }</span> : <span className="text-muted">—</span> }</td>
-										<td className="min-w-[240px] px-4 py-3"><div className="font-medium">{ d.title }</div><div className="text-[11px] text-muted">{ d.sub }</div></td>
+										<td className="whitespace-nowrap px-4 py-3">{ e.coupon ? <span className="rounded border border-[#E5E5E0] bg-[#FAFAF7] px-2 py-0.5 font-mono text-[12px] font-medium">{ e.coupon.toUpperCase() }</span> : <span className="text-[#706F6A]">—</span> }</td>
+										<td className="min-w-[240px] px-4 py-3"><div className="font-medium">{ d.title }</div><div className="text-[12px] text-[#706F6A]">{ d.sub }</div></td>
 										<td className="whitespace-nowrap px-4 py-3">
 											{ e.ring
-												? <button type="button" onClick={ ( ev ) => { ev.stopPropagation(); onOpen( ( e.ring as { key: number } ).key ); } } className="inline-flex items-center gap-1 font-medium text-primary hover:underline"><Network size={ 14 } />{ sprintf( __( 'Ring #%s', 'coupon-lock' ), ringLabel( e.ring.key ) ) } <span className="font-normal text-muted">({ sprintf( _n( '%d order', '%d orders', e.ring.size, 'coupon-lock' ), e.ring.size ) })</span></button>
-												: e.type === 'import' ? <span className="font-medium">{ sprintf( _n( '%d ring found', '%d rings found', e.meta.rings ?? 0, 'coupon-lock' ), e.meta.rings ?? 0 ) }</span> : <span className="text-muted">—</span> }
+												? <button type="button" onClick={ ( ev ) => { ev.stopPropagation(); onOpen( ( e.ring as { key: number } ).key ); } } className="inline-flex items-center gap-1 font-medium text-[#111] hover:text-[#FF5A1F]"><Network size={ 14 } />{ sprintf( __( 'Ring #%s', 'coupon-lock' ), ringLabel( e.ring.key ) ) } <span className="font-normal text-[#706F6A]">({ sprintf( _n( '%d order', '%d orders', e.ring.size, 'coupon-lock' ), e.ring.size ) })</span></button>
+												: e.type === 'import' ? <span className="font-medium">{ sprintf( _n( '%d ring found', '%d rings found', e.meta.rings ?? 0, 'coupon-lock' ), e.meta.rings ?? 0 ) }</span> : <span className="text-[#706F6A]">—</span> }
 										</td>
 										<td className={ cn( 'min-w-[200px] px-4 py-3 font-medium', d.tone ) }>{ d.outcome }</td>
 										<td className="whitespace-nowrap px-4 py-3 text-right" onClick={ ( ev ) => ev.stopPropagation() }>
-											{ order?.url
-												? <a href={ order.url } className="inline-flex items-center gap-1 text-[12px] text-muted hover:text-primary">{ e.type === 'held' ? sprintf( __( 'Review order #%d', 'coupon-lock' ), order.id ) : sprintf( __( 'View order #%d', 'coupon-lock' ), order.id ) }<ExternalLink size={ 13 } /></a>
-												: e.type === 'ring' && e.ring
-													? <button type="button" className="text-[12px] font-semibold text-primary hover:underline" onClick={ () => onOpen( ( e.ring as { key: number } ).key ) }>{ __( 'Inspect ring', 'coupon-lock' ) }</button>
-													: <button type="button" onClick={ () => setPick( e.id ) } className={ cn( 'rounded px-2.5 py-1 text-[12px] font-semibold', on ? 'bg-primary text-white' : 'text-muted hover:text-ink' ) }>{ __( 'View details', 'coupon-lock' ) }</button> }
+											<div className="flex flex-col items-end gap-1">
+												<button type="button" onClick={ () => setPick( e.id ) } aria-haspopup="dialog" className={ cn( MONO, 'h-8 rounded border px-3 text-[10px] font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F]', on ? 'border-[#111] bg-[#111] text-[#FAFAF7]' : 'border-[#E5E5E0] text-[#111] hover:border-[#111]' ) }>{ __( 'View details', 'coupon-lock' ) }</button>
+												{ order?.url && <a href={ order.url } className="inline-flex items-center gap-1 text-[12px] text-[#706F6A] hover:text-[#FF5A1F]">{ e.type === 'held' ? sprintf( __( 'Review order #%d', 'coupon-lock' ), order.id ) : sprintf( __( 'View order #%d', 'coupon-lock' ), order.id ) }<ExternalLink size={ 13 } /></a> }
+											</div>
 										</td>
 									</tr>
 								);
@@ -391,17 +388,17 @@ export function Activity( { onOpen }: { onOpen: ( key: number ) => void } ) {
 						</tbody>
 					</table>
 				</div>
-				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-line p-4 text-muted">
+				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-[#E5E5E0] p-4 text-[#706F6A]">
 					<label className="flex items-center gap-2">{ __( 'Rows per page:', 'coupon-lock' ) }
 						<Select value={ f.per_page } onChange={ ( e ) => change( { per_page: Number( e.target.value ) } ) }>{ [ 10, 25, 50, 100 ].map( ( n ) => <option key={ n } value={ n }>{ n }</option> ) }</Select>
 					</label>
 					<div className="flex items-center gap-1">
 						<Button variant="ghost" disabled={ f.page <= 1 } onClick={ () => setF( ( o ) => ( { ...o, page: o.page - 1 } ) ) } aria-label={ __( 'Previous page', 'coupon-lock' ) }><ChevronLeft size={ 16 } /></Button>
-						<span className="tabular px-2 text-ink">{ sprintf( __( 'Page %1$d of %2$d', 'coupon-lock' ), f.page, Math.max( 1, data?.total_pages ?? 1 ) ) }</span>
+						<span className="tabular px-2 font-mono text-[#111]">{ sprintf( __( 'Page %1$d of %2$d', 'coupon-lock' ), f.page, Math.max( 1, data?.total_pages ?? 1 ) ) }</span>
 						<Button variant="ghost" disabled={ f.page >= ( data?.total_pages ?? 1 ) } onClick={ () => setF( ( o ) => ( { ...o, page: o.page + 1 } ) ) } aria-label={ __( 'Next page', 'coupon-lock' ) }><ChevronRight size={ 16 } /></Button>
 					</div>
 				</div>
-			</Card>
+			</div>
 
 			{ shown.current && <Detail e={ shown.current } open={ !! selected } onOpen={ onOpen } onToggleAllow={ toggleAllow } onClose={ () => setPick( null ) } busy={ busy } /> }
 		</div>
