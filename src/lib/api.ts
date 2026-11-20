@@ -45,9 +45,18 @@ export interface Coupon {
 	type: string;
 	amount: string;
 	status: string;
-	locked: boolean;
+	rules: string[];
 }
 
 export const getCoupons = () => apiFetch< Coupon[] >( { path: `${ base }/coupons` } );
 
-export const lockCoupon = ( id: number, locked: boolean ) => apiFetch< { locked: boolean } >( { path: `${ base }/coupons/${ id }`, method: 'POST', data: { locked } } );
+export interface RuleDef {
+	id: string;
+	label: string;
+	description: string;
+	warning: string;
+}
+
+export const getRules = () => apiFetch< RuleDef[] >( { path: `${ base }/rules` } );
+
+export const saveCouponRules = ( id: number, rules: string[] ) => apiFetch< { rules: string[] } >( { path: `${ base }/coupons/${ id }`, method: 'POST', data: { rules } } );

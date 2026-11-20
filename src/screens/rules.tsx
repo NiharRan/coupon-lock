@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { AtSign, Home, Phone, Search } from 'lucide-react';
+import { AtSign, Home, Phone, Plus, Search, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input, Select } from '../components/ui/input';
-import { getCoupons, lockCoupon, type Coupon } from '../lib/api';
+import { getCoupons, getRules, saveCouponRules, type Coupon, type RuleDef } from '../lib/api';
 import { cn } from '../lib/utils';
 import type { Overview } from '../types';
 import { MONO, SectionLabel } from './overview';
 
 const PER_PAGE = 10;
-type Rule = '' | 'on' | 'off';
+type Has = '' | 'has' | 'none';
 
 const MATCHES = [
 	{ icon: AtSign, title: __( 'Email', 'coupon-lock' ), text: __( 'Gmail dots and +tags are ignored.', 'coupon-lock' ) },
@@ -29,39 +29,48 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 	const [ coupons, setCoupons ] = useState< Coupon[] | null >( null );
 	const [ error, setError ] = useState( '' );
 	const [ search, setSearch ] = useState( '' );
-	const [ rule, setRule ] = useState< Rule >( '' );
+	const [ defs, setDefs ] = useState< RuleDef[] >( [] );
+	const [ has, setHas ] = useState< Has >( '' );
+	const [ ruleId, setRuleId ] = useState( '' );
+	const [ menu, setMenu ] = useState< number | null >( null );
 	const [ type, setType ] = useState( '' );
 	const [ page, setPage ] = useState( 1 );
 
 	useEffect( () => {
-		getCoupons().then( setCoupons ).catch( () => setError( __( 'Could not load coupons.', 'coupon-lock' ) ) );
+		Promise.all( [ getRules(), getCoupons() ] )
+			.then( ( [ d, c ] ) => {
+				setDefs( d );
+				setCoupons( c );
+			} )
+			.catch( () => setError( __( 'Could not load coupons.', 'coupon-lock' ) ) );
 	}, [] );
 
-	const toggle = ( c: Coupon ) => {
-		const set = ( locked: boolean ) => setCoupons( ( list ) => list && list.map( ( x ) => ( x.id === c.id ? { ...x, locked } : x ) ) );
-		set( ! c.locked );
+	const setRules = ( c: Coupon, rules: string[] ) => {
+		const set = ( list: string[] ) => setCoupons( ( l ) => l && l.map( ( x ) => ( x.id === c.id ? { ...x, rules: list } : x ) ) );
+		set( rules );
+		setMenu( null );
 		setError( '' );
-		lockCoupon( c.id, ! c.locked ).catch( () => {
-			set( c.locked );
+		saveCouponRules( c.id, rules ).then( ( r ) => set( r.rules ) ).catch( () => {
+			set( c.rules );
 			setError( __( 'Could not save. Try again.', 'coupon-lock' ) );
 		} );
 	};
 
 	const all = coupons ?? [];
-	const on = all.filter( ( c ) => c.locked ).length;
+	const withRules = all.filter( ( c ) => c.rules.length ).length;
 	const filtered = useMemo(
-		() => all.filter( ( c ) => c.code.toLowerCase().includes( search.trim().toLowerCase() ) && ( ! type || c.type === type ) && ( ! rule || c.locked === ( rule === 'on' ) ) ),
-		[ all, search, type, rule ]
+		() => all.filter( ( c ) => c.code.toLowerCase().includes( search.trim().toLowerCase() ) && ( ! type || c.type === type ) && ( ! has || ( has === 'has' ) === c.rules.length > 0 ) && ( ! ruleId || c.rules.includes( ruleId ) ) ),
+		[ all, search, type, has, ruleId ]
 	);
 	const pages = Math.max( 1, Math.ceil( filtered.length / PER_PAGE ) );
 	const current = Math.min( page, pages );
 	const shown = filtered.slice( ( current - 1 ) * PER_PAGE, current * PER_PAGE );
 	const types = Array.from( new Set( all.map( ( c ) => c.type ) ) );
-	const reset = () => { setSearch( '' ); setRule( '' ); setType( '' ); setPage( 1 ); };
-	const chips: [ Rule, string ][] = [
+	const reset = () => { setSearch( '' ); setHas( '' ); setRuleId( '' ); setType( '' ); setPage( 1 ); };
+	const chips: [ Has, string ][] = [
 		[ '', sprintf( __( 'All %d', 'coupon-lock' ), all.length ) ],
-		[ 'on', sprintf( __( 'New customers only %d', 'coupon-lock' ), on ) ],
-		[ 'off', sprintf( __( 'No rule %d', 'coupon-lock' ), all.length - on ) ],
+		[ 'has', sprintf( __( 'Has rules %d', 'coupon-lock' ), withRules ) ],
+		[ 'none', sprintf( __( 'No rules %d', 'coupon-lock' ), all.length - withRules ) ],
 	];
 
 	return (
@@ -72,7 +81,7 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 						<h2 id="ts-coupon-lock-coupons" className="m-0"><SectionLabel>{ __( '01 / Coupon rules', 'coupon-lock' ) }</SectionLabel></h2>
 						<p className="mt-1.5 text-[13px] text-[#706F6A]">
 							{ enabled
-								? __( 'A coupon with “New customers only” is refused when the shopper’s email, phone or address matches an earlier order.', 'coupon-lock' )
+								? __( 'A coupon is refused when the shopper matches an earlier order on any rule added to it.', 'coupon-lock' )
 								: __( 'Blocking is paused in Plugin Settings. Orders are still indexed.', 'coupon-lock' ) }
 						</p>
 					</div>
@@ -87,15 +96,19 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 						<button
 							key={ id }
 							type="button"
-							aria-pressed={ rule === id }
-							onClick={ () => { setRule( id ); setPage( 1 ); } }
-							className={ cn( 'h-7 rounded border px-2.5 font-mono text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', rule === id ? 'border-[#111] bg-[#111] text-white' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }
+							aria-pressed={ has === id }
+							onClick={ () => { setHas( id ); setPage( 1 ); } }
+							className={ cn( 'h-7 rounded border px-2.5 font-mono text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', has === id ? 'border-[#111] bg-[#111] text-white' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }
 						>
 							{ label }
 						</button>
 					) ) }
+					<Select className="ml-auto h-7 rounded font-mono text-[11px]" value={ ruleId } onChange={ ( e ) => { setRuleId( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Rule', 'coupon-lock' ) }>
+						<option value="">{ __( 'Any rule', 'coupon-lock' ) }</option>
+						{ defs.map( ( d ) => <option key={ d.id } value={ d.id }>{ d.label }</option> ) }
+					</Select>
 					{ types.length > 1 && (
-						<Select className="ml-auto h-7 rounded font-mono text-[11px]" value={ type } onChange={ ( e ) => { setType( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Discount type', 'coupon-lock' ) }>
+						<Select className="h-7 h-7 rounded font-mono text-[11px]" value={ type } onChange={ ( e ) => { setType( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Discount type', 'coupon-lock' ) }>
 							<option value="">{ __( 'Any discount type', 'coupon-lock' ) }</option>
 							{ types.map( ( t ) => <option key={ t } value={ t }>{ TYPES[ t ] ?? t }</option> ) }
 						</Select>
@@ -126,19 +139,34 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 								</div>
 								<span className={ cn( MONO, 'flex-[0_0_130px] text-[10px] text-[#706F6A]' ) }>{ TYPES[ c.type ] ?? c.type }</span>
 								<span className="flex-[0_0_70px] text-right font-mono text-[13px] font-semibold tabular-nums">{ amount( c ) }</span>
-								<span className={ cn( MONO, 'flex-[0_0_170px] text-right text-[10px]', c.locked ? 'text-[#111]' : 'text-[#9A9A93]' ) }>
-									{ c.locked ? __( 'New customers only', 'coupon-lock' ) : __( 'No rule', 'coupon-lock' ) }
-								</span>
-								<button
-									type="button"
-									role="switch"
-									aria-checked={ c.locked }
-									aria-label={ sprintf( __( 'New customers only for %s', 'coupon-lock' ), c.code ) }
-									onClick={ () => toggle( c ) }
-									className={ cn( 'relative h-6 w-11 shrink-0 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', c.locked ? 'border-[#111] bg-[#111]' : 'border-[#E5E5E0] bg-[#F4F4F1]' ) }
-								>
-									<span className={ cn( 'absolute top-[3px] h-4 w-4 rounded-full transition-all', c.locked ? 'left-[23px] bg-[#FF5A1F]' : 'left-[3px] bg-[#9A9A93]' ) } />
-								</button>
+								<div className="relative flex flex-[1_1_260px] flex-wrap items-center gap-1.5">
+									{ c.rules.map( ( id ) => {
+										const d = defs.find( ( x ) => x.id === id );
+										return d ? (
+											<span key={ id } title={ d.warning || d.description } className={ cn( MONO, 'inline-flex items-center gap-1 rounded border border-[#111] bg-[#111] py-0.5 pl-2 pr-1 text-[10px] text-white' ) }>
+												{ d.label }
+												<button type="button" onClick={ () => setRules( c, c.rules.filter( ( r ) => r !== id ) ) } aria-label={ sprintf( __( 'Remove %1$s rule from %2$s', 'coupon-lock' ), d.label, c.code ) } className="flex h-4 w-4 items-center justify-center rounded text-white hover:text-[#FF5A1F] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F]"><X size={ 10 } /></button>
+											</span>
+										) : null;
+									} ) }
+									{ ! c.rules.length && <span className={ cn( MONO, 'text-[10px] text-[#9A9A93]' ) }>{ __( 'No rules', 'coupon-lock' ) }</span> }
+									{ defs.some( ( d ) => ! c.rules.includes( d.id ) ) && (
+										<button type="button" aria-haspopup="menu" aria-expanded={ menu === c.id } onClick={ () => setMenu( menu === c.id ? null : c.id ) } onKeyDown={ ( e ) => e.key === 'Escape' && setMenu( null ) } className={ cn( MONO, 'inline-flex h-6 items-center gap-1 rounded border border-[#E5E5E0] bg-white px-2 text-[10px] text-[#111] hover:border-[#111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F]' ) }>
+											<Plus size={ 10 } />{ __( 'Add rule', 'coupon-lock' ) }
+										</button>
+									) }
+									{ menu === c.id && (
+										<div role="menu" className="absolute left-0 top-full z-10 mt-1 w-[280px] rounded border border-[#111] bg-white">
+											{ defs.filter( ( d ) => ! c.rules.includes( d.id ) ).map( ( d ) => (
+												<button key={ d.id } type="button" role="menuitem" onClick={ () => setRules( c, [ ...c.rules, d.id ] ) } className="block w-full border-b border-[#E5E5E0] px-3 py-2 text-left last:border-b-0 hover:bg-[#F4F4F1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#FF5A1F]">
+													<span className={ cn( MONO, 'text-[11px] font-semibold text-[#111]' ) }>{ d.label }</span>
+													<span className="mt-0.5 block text-[12px] leading-[16px] text-[#706F6A]">{ d.description }</span>
+													{ d.warning && <span className="mt-0.5 block text-[12px] leading-[16px] text-[#FF5A1F]">{ d.warning }</span> }
+												</button>
+											) ) }
+										</div>
+									) }
+								</div>
 							</li>
 						) ) }
 					</ul>
@@ -169,7 +197,7 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 						</div>
 					) ) }
 				</div>
-				<p className="m-0 text-[13px] text-[#706F6A]">{ __( 'IP addresses are stored but never used to match. If a detail is missing, nothing matches and checkout continues.', 'coupon-lock' ) }</p>
+				<p className="m-0 text-[13px] text-[#706F6A]">{ __( 'IP matching is off unless you add the IP rule to a coupon, because shared networks can block innocent shoppers. If a detail is missing, nothing matches and checkout continues.', 'coupon-lock' ) }</p>
 			</section>
 		</div>
 	);
