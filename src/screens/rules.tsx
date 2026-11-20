@@ -56,8 +56,8 @@ function RulePicker( { coupon, defs, onApply }: { coupon: Coupon; defs: RuleDef[
 					</label>
 				) ) }
 				<div className="flex justify-end gap-2 border-t border-[#E5E5E0] p-2">
-					<Button variant="secondary" onClick={ () => setOpen( false ) }>{ __( 'Cancel', 'coupon-lock' ) }</Button>
-					<Button onClick={ () => { onApply( draft ); setOpen( false ); } }>{ __( 'Apply', 'coupon-lock' ) }</Button>
+					<Button variant="secondary" className="h-7 rounded px-3 font-mono text-[11px]" onClick={ () => setOpen( false ) }>{ __( 'Cancel', 'coupon-lock' ) }</Button>
+					<Button className="h-7 rounded px-3 font-mono text-[11px]" onClick={ () => { onApply( draft ); setOpen( false ); } }>{ __( 'Apply', 'coupon-lock' ) }</Button>
 				</div>
 			</PopoverContent>
 		</Popover>
@@ -122,9 +122,9 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 								: __( 'Blocking is paused in Plugin Settings. Orders are still indexed.', 'coupon-lock' ) }
 						</p>
 					</div>
-					<div className="relative w-full max-w-[280px] flex items-center">
-						<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-						<Input className="w-full flex-1 pl-9" placeholder={ __( 'Find a coupon code', 'coupon-lock' ) } value={ search } onChange={ ( e ) => { setSearch( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Search coupons', 'coupon-lock' ) } />
+					<div className="relative w-full max-w-[280px]">
+						<Search size={ 16 } className="pointer-events-none absolute left-3 top-1/3 -translate-y-1/2 text-muted" />
+						<Input className="w-full rounded pl-9 font-mono text-[12px]" placeholder={ __( 'Find a coupon code', 'coupon-lock' ) } value={ search } onChange={ ( e ) => { setSearch( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Search coupons', 'coupon-lock' ) } />
 					</div>
 				</div>
 
@@ -135,17 +135,17 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 							type="button"
 							aria-pressed={ has === id }
 							onClick={ () => { setHas( id ); setPage( 1 ); } }
-							className={ cn( 'h-9 rounded border px-3 font-mono text-[11px] uppercase tracking-[0.06em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', has === id ? 'border-[#111] bg-[#111] text-white' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }
+							className={ cn( 'h-7 rounded border px-2.5 font-mono text-[11px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-2', has === id ? 'border-[#111] bg-[#111] text-white' : 'border-[#E5E5E0] bg-white text-[#111] hover:border-[#111]' ) }
 						>
 							{ label }
 						</button>
 					) ) }
-					<Select className="ml-auto" value={ ruleId } onChange={ ( e ) => { setRuleId( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Rule', 'coupon-lock' ) }>
+					<Select className="ml-auto h-7 rounded font-mono text-[11px]" value={ ruleId } onChange={ ( e ) => { setRuleId( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Rule', 'coupon-lock' ) }>
 						<option value="">{ __( 'Any rule', 'coupon-lock' ) }</option>
 						{ defs.map( ( d ) => <option key={ d.id } value={ d.id }>{ d.label }</option> ) }
 					</Select>
 					{ types.length > 1 && (
-						<Select value={ type } onChange={ ( e ) => { setType( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Discount type', 'coupon-lock' ) }>
+						<Select className="h-7 h-7 rounded font-mono text-[11px]" value={ type } onChange={ ( e ) => { setType( e.target.value ); setPage( 1 ); } } aria-label={ __( 'Discount type', 'coupon-lock' ) }>
 							<option value="">{ __( 'Any discount type', 'coupon-lock' ) }</option>
 							{ types.map( ( t ) => <option key={ t } value={ t }>{ TYPES[ t ] ?? t }</option> ) }
 						</Select>
