@@ -22,7 +22,7 @@ function ts_check( $ok, $label ) {
 	}
 }
 
-function ts_order( $email, $phone, $line1, $postcode, $coupon = '', $status = 'pending' ) {
+function ts_order( $email, $phone, $line1, $postcode, $coupon = '', $status = 'pending', $ip = '' ) {
 	global $ts_product;
 	$o = wc_create_order();
 	$o->add_product( $ts_product, 1 );
@@ -30,6 +30,7 @@ function ts_order( $email, $phone, $line1, $postcode, $coupon = '', $status = 'p
 	$o->set_billing_phone( $phone );
 	$o->set_billing_address_1( $line1 );
 	$o->set_billing_postcode( $postcode );
+	$o->set_customer_ip_address( $ip );
 	$o->update_meta_data( '_ts_coupon_lock_test', '1' );
 	if ( $coupon ) {
 		$o->apply_coupon( $coupon );
@@ -46,8 +47,9 @@ function ts_order( $email, $phone, $line1, $postcode, $coupon = '', $status = 'p
 }
 
 /** Apply a coupon in a fresh cart as the given shopper. Returns array( bool applied, string notices ). */
-function ts_apply( $code, $email, $phone = '', $line1 = '', $postcode = '' ) {
+function ts_apply( $code, $email, $phone = '', $line1 = '', $postcode = '', $ip = '' ) {
 	global $ts_product;
+	$_SERVER['REMOTE_ADDR'] = $ip;
 	wc_load_cart();
 	WC()->cart->empty_cart();
 	WC()->cart->remove_coupons();
@@ -266,6 +268,16 @@ ts_check( 'blocked' === \Coupon_Lock\Api::ring_state_for_order( $sid ) && ! \Cou
 ts_check( null === \Coupon_Lock\Api::set_ring_state( $sid, 'bogus' ), 'Api: unknown state returns null' );
 ts_check( 'none' === \Coupon_Lock\Api::set_ring_state( $sid, 'clear' ), 'Api: clear returns none' );
 ts_check( 'none' === \Coupon_Lock\Api::ring_state_for_order( $sid ), 'Api: ring_state_for_order agrees (none)' );
+
+// ---------------------------------------------------------------- coupon rules
+echo "Coupon rules\n";
+$fp  = new Fingerprinter();
+$ipa = ts_order( 'ip.one@example.com', '555-300-4000', '7 Ip St', '70007', '', 'pending', '203.0.113.9' );
+$h   = $fp->hashes( 'ip.two@example.com', '555-300-5000', '8 Other St', '80008', '203.0.113.9' );
+ts_check( array( $ipa->get_id() ) === $edges->matches( $h, 0, array( 'ip_h' ) ), 'Edges::matches by ip_h only finds the same-IP order' );
+ts_check( ! in_array( $ipa->get_id(), $edges->matches( $h ), true ), 'default columns still ignore IP' );
+ts_check( array() === $edges->matches( $h, 0, array( 'bogus; DROP' ) ), 'unknown column is skipped, no error' );
+ts_check( array() === $edges->matches( $fp->hashes( 'n@example.com', '', '', '', '' ), 0, array( 'ip_h' ) ), 'empty IP matches nothing' );
 
 // ---------------------------------------------------------------- done
 ts_clean();
