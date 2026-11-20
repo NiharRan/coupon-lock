@@ -6,6 +6,7 @@ if ( ! defined( 'ABSPATH' ) && 'cli' !== PHP_SAPI ) {
 defined( 'ABSPATH' ) || define( 'ABSPATH', __DIR__ );
 defined( 'DAY_IN_SECONDS' ) || define( 'DAY_IN_SECONDS', 86400 );
 require __DIR__ . '/../includes/autoload.php';
+use Coupon_Lock\Core\CouponRules;
 use Coupon_Lock\Core\Normalize;
 use Coupon_Lock\Core\Rings;
 function ts_coupon_lock_eq( $actual, $expected, $label ) {
@@ -64,3 +65,11 @@ ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, false, time(
 ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, false, 0 ), true, 'shown_never_dismissed' );
 ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, false, time() - 1 ), true, 'shown_after_dismissal_expired' );
 echo "ok upsell\n";
+
+// Coupon rules: new meta wins over the legacy flag, dedupes, drops unknown ids.
+$ts_coupon_lock_known = array( 'email', 'phone', 'address', 'ip' );
+ts_coupon_lock_eq( CouponRules::resolve( array( 'ip', 'email', 'ip', 'zzz' ), 'yes', $ts_coupon_lock_known ), array( 'ip', 'email' ), 'rules: new meta wins' );
+ts_coupon_lock_eq( CouponRules::resolve( array(), 'yes', $ts_coupon_lock_known ), array(), 'rules: empty list stays empty' );
+ts_coupon_lock_eq( CouponRules::resolve( '', 'yes', $ts_coupon_lock_known ), array( 'email', 'phone', 'address' ), 'rules: legacy flag' );
+ts_coupon_lock_eq( CouponRules::resolve( '', 'no', $ts_coupon_lock_known ), array(), 'rules: legacy off' );
+ts_coupon_lock_eq( CouponRules::resolve( '', '', $ts_coupon_lock_known ), array(), 'rules: nothing set' );
