@@ -7,6 +7,7 @@
 
 namespace Coupon_Lock\Rest;
 
+use Coupon_Lock\Features\CouponGuard;
 use Coupon_Lock\Features\Importer;
 use Coupon_Lock\Module;
 
@@ -179,6 +180,57 @@ class Routes implements Module {
 						'enabled' => 'no' !== get_option( 'ts_coupon_lock_enabled' ),
 						'hold'    => 'yes' === get_option( 'ts_coupon_lock_hold_orders' ),
 					);
+				},
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/coupons',
+			array(
+				'methods'             => 'GET',
+				'permission_callback' => $permission,
+				'callback'            => function () {
+					$out = array();
+					foreach ( get_posts(
+						array(
+							'post_type'   => 'shop_coupon',
+							'post_status' => array( 'publish', 'draft', 'pending', 'future' ),
+							'numberposts' => 500, // shortcut: first 500 coupons only, add paging when a store has more.
+							'orderby'     => 'title',
+							'order'       => 'ASC',
+						)
+					) as $post ) {
+						$c     = new \WC_Coupon( $post->ID );
+						$out[] = array(
+							'id'     => $post->ID,
+							'code'   => $c->get_code(),
+							'type'   => $c->get_discount_type(),
+							'amount' => $c->get_amount(),
+							'status' => $post->post_status,
+							'locked' => 'yes' === $c->get_meta( CouponGuard::META ),
+						);
+					}
+					return $out;
+				},
+			)
+		);
+		register_rest_route(
+			self::NAMESPACE,
+			'/coupons/(?P<id>\\d+)',
+			array(
+				'methods'             => 'POST',
+				'permission_callback' => $permission,
+				'args'                => array( 'locked' => array( 'type' => 'boolean', 'required' => true ) ),
+				'callback'            => function ( \WP_REST_Request $req ) {
+					$post = get_post( (int) $req['id'] );
+					if ( ! $post || 'shop_coupon' !== $post->post_type ) {
+						return new \WP_Error( 'ts_coupon_lock_no_coupon', __( 'Coupon not found.', 'coupon-lock' ), array( 'status' => 404 ) );
+					}
+					$c  = new \WC_Coupon( $post->ID );
+					$on = rest_sanitize_boolean( $req->get_param( 'locked' ) );
+					$c->update_meta_data( CouponGuard::META, $on ? 'yes' : 'no' );
+					$c->save();
+					return array( 'locked' => $on );
 				},
 			)
 		);

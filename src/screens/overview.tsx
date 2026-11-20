@@ -25,7 +25,7 @@ const LINK_FILTER: [ Filters[ 'link' ], string ][] = [
 ];
 const SHOWN = 3; // Order links per row before "and N more".
 
-const MONO = 'font-mono uppercase tracking-[0.06em]';
+export const MONO = 'font-mono uppercase tracking-[0.06em]';
 
 /** Twin-dot motif: solid ink beside signal orange. */
 function TwinDot( { className }: { className?: string } ) {
@@ -37,7 +37,7 @@ function TwinDot( { className }: { className?: string } ) {
 	);
 }
 
-function SectionLabel( { children }: { children: React.ReactNode } ) {
+export function SectionLabel( { children }: { children: React.ReactNode } ) {
 	return <div className={ cn( MONO, 'flex items-center gap-2 text-[12px] font-semibold text-[#111]' ) }><TwinDot />{ children }</div>;
 }
 

@@ -38,3 +38,16 @@ export const setSample = ( on: boolean ) => apiFetch( { path: `${ base }/sample`
 export const getRing = ( orderId: number ) => apiFetch< RingDetail >( { path: `${ base }/ring/${ orderId }` } );
 
 export const blockRing = ( orderId: number, on: boolean ) => apiFetch< { blocked: boolean } >( { path: `${ base }/ring/${ orderId }/block`, method: on ? 'POST' : 'DELETE' } );
+
+export interface Coupon {
+	id: number;
+	code: string;
+	type: string;
+	amount: string;
+	status: string;
+	locked: boolean;
+}
+
+export const getCoupons = () => apiFetch< Coupon[] >( { path: `${ base }/coupons` } );
+
+export const lockCoupon = ( id: number, locked: boolean ) => apiFetch< { locked: boolean } >( { path: `${ base }/coupons/${ id }`, method: 'POST', data: { locked } } );
