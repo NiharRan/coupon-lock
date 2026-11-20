@@ -76,3 +76,10 @@
 #ts-coupon-lock-root .ts-overlay[data-state='open'] { animation: ts-fade-in 0.32s both; }
 #ts-coupon-lock-root .ts-overlay[data-state='closed'] { animation: ts-fade-out 0.24s both; }
 @media (prefers-reduced-motion: reduce) { #ts-coupon-lock-root .ts-sheet, #ts-coupon-lock-root .ts-overlay { animation: none !important; } }
+
+/* White tick for the ink-filled checkboxes (Tailwind cannot take an inline SVG url here). */
+#ts-coupon-lock-root .ts-check:checked {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-7'/%3E%3C/svg%3E");
+	background-position: center;
+	background-repeat: no-repeat;
+}

@@ -15,9 +15,10 @@ class Rules {
 	const META = '_ts_coupon_lock_rules';
 
 	/**
-	 * Rule id => label, description, column (an Edges hash column) and optional warning.
+	 * Rule id => label, description, optional warning, and how it matches: either `column` (an Edges hash column) or `match`,
+	 * a callable( array $hashes, \WC_Coupon $coupon ): int[] returning the earlier order ids that match (for signals Edges does not store).
 	 *
-	 * @return array<string,array{label:string,description:string,column:string,warning?:string}>
+	 * @return array<string,array{label:string,description:string,column?:string,match?:callable,warning?:string}>
 	 */
 	public static function all(): array {
 		$rules = array(

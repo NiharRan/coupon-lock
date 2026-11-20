@@ -87,7 +87,11 @@ class CouponGuard implements Module {
 		$matched = array();
 		$all     = Rules::all();
 		foreach ( $rules as $rule ) {
-			$found = $this->edges->matches( $h, 0, array( $all[ $rule ]['column'] ) );
+			// A rule either names an Edges hash column or supplies its own match callback (for signals Lite does not store).
+			$def   = $all[ $rule ];
+			$found = isset( $def['match'] ) && is_callable( $def['match'] )
+				? array_map( 'intval', (array) call_user_func( $def['match'], $h, $coupon ) )
+				: $this->edges->matches( $h, 0, array( (string) ( $def['column'] ?? '' ) ) );
 			if ( $found ) {
 				$matched[] = $rule;
 				$ids       = array_merge( $ids, $found );

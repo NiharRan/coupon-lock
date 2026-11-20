@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { AtSign, Home, Phone, Plus, Search, X } from 'lucide-react';
 import { Button } from '../components/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
 import { Input, Select } from '../components/ui/input';
 import { getCoupons, getRules, saveCouponRules, type Coupon, type RuleDef } from '../lib/api';
 import { cn } from '../lib/utils';
@@ -9,6 +10,8 @@ import type { Overview } from '../types';
 import { MONO, SectionLabel } from './overview';
 
 const PER_PAGE = 10;
+/** Own checkbox look: wp-admin's checked style can blend into the popover background. Ink fill with a white tick, WP's own tick hidden. */
+const CHECK = 'ts-check m-0 mt-0.5 h-4 w-4 shrink-0 cursor-pointer appearance-none rounded-[3px] border border-[#111] bg-white before:hidden checked:bg-[#111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F] focus-visible:ring-offset-1';
 type Has = '' | 'has' | 'none';
 
 const MATCHES = [
@@ -25,6 +28,42 @@ const TYPES: Record< string, string > = {
 
 const amount = ( c: Coupon ) => ( c.type === 'percent' ? `${ c.amount }%` : c.amount );
 
+/** Popover to pick any mix of rules for one coupon, or all at once. Applies on "Apply". */
+function RulePicker( { coupon, defs, onApply }: { coupon: Coupon; defs: RuleDef[]; onApply: ( rules: string[] ) => void } ) {
+	const [ open, setOpen ] = useState( false );
+	const [ draft, setDraft ] = useState< string[] >( coupon.rules );
+	const everything = defs.length > 0 && defs.every( ( d ) => draft.includes( d.id ) );
+	const flip = ( id: string ) => setDraft( ( d ) => ( d.includes( id ) ? d.filter( ( x ) => x !== id ) : [ ...d, id ] ) );
+	const row = 'flex w-full cursor-pointer items-start gap-2.5 border-b border-[#E5E5E0] px-3 py-2.5 last:border-b-0 hover:bg-[#F4F4F1]';
+	return (
+		<Popover open={ open } onOpenChange={ ( o ) => { setOpen( o ); o && setDraft( coupon.rules ); } }>
+			<PopoverTrigger className={ cn( MONO, 'inline-flex h-6 items-center gap-1 rounded border border-[#E5E5E0] bg-white px-2 text-[10px] text-[#111] hover:border-[#111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F]' ) }>
+				<Plus size={ 10 } />{ __( 'Add rule', 'coupon-lock' ) }
+			</PopoverTrigger>
+			<PopoverContent>
+				<label className={ row }>
+					<input type="checkbox" className={ CHECK } checked={ everything } onChange={ () => setDraft( everything ? [] : defs.map( ( d ) => d.id ) ) } />
+					<span className={ cn( MONO, 'text-[11px] font-semibold text-[#111]' ) }>{ __( 'All rules', 'coupon-lock' ) }</span>
+				</label>
+				{ defs.map( ( d ) => (
+					<label key={ d.id } className={ row }>
+						<input type="checkbox" className={ CHECK } checked={ draft.includes( d.id ) } onChange={ () => flip( d.id ) } />
+						<span>
+							<span className={ cn( MONO, 'block text-[11px] font-semibold text-[#111]' ) }>{ d.label }</span>
+							<span className="mt-0.5 block text-[12px] leading-[16px] text-[#706F6A]">{ d.description }</span>
+							{ d.warning && <span className="mt-0.5 block text-[12px] leading-[16px] text-[#FF5A1F]">{ d.warning }</span> }
+						</span>
+					</label>
+				) ) }
+				<div className="flex justify-end gap-2 border-t border-[#E5E5E0] p-2">
+					<Button variant="secondary" className="h-7 rounded px-3 font-mono text-[11px]" onClick={ () => setOpen( false ) }>{ __( 'Cancel', 'coupon-lock' ) }</Button>
+					<Button className="h-7 rounded px-3 font-mono text-[11px]" onClick={ () => { onApply( draft ); setOpen( false ); } }>{ __( 'Apply', 'coupon-lock' ) }</Button>
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
 export function Rules( { enabled }: { data: Overview | null; enabled: boolean } ) {
 	const [ coupons, setCoupons ] = useState< Coupon[] | null >( null );
 	const [ error, setError ] = useState( '' );
@@ -32,7 +71,6 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 	const [ defs, setDefs ] = useState< RuleDef[] >( [] );
 	const [ has, setHas ] = useState< Has >( '' );
 	const [ ruleId, setRuleId ] = useState( '' );
-	const [ menu, setMenu ] = useState< number | null >( null );
 	const [ type, setType ] = useState( '' );
 	const [ page, setPage ] = useState( 1 );
 
@@ -48,7 +86,6 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 	const setRules = ( c: Coupon, rules: string[] ) => {
 		const set = ( list: string[] ) => setCoupons( ( l ) => l && l.map( ( x ) => ( x.id === c.id ? { ...x, rules: list } : x ) ) );
 		set( rules );
-		setMenu( null );
 		setError( '' );
 		saveCouponRules( c.id, rules ).then( ( r ) => set( r.rules ) ).catch( () => {
 			set( c.rules );
@@ -150,22 +187,7 @@ export function Rules( { enabled }: { data: Overview | null; enabled: boolean } 
 										) : null;
 									} ) }
 									{ ! c.rules.length && <span className={ cn( MONO, 'text-[10px] text-[#9A9A93]' ) }>{ __( 'No rules', 'coupon-lock' ) }</span> }
-									{ defs.some( ( d ) => ! c.rules.includes( d.id ) ) && (
-										<button type="button" aria-haspopup="menu" aria-expanded={ menu === c.id } onClick={ () => setMenu( menu === c.id ? null : c.id ) } onKeyDown={ ( e ) => e.key === 'Escape' && setMenu( null ) } className={ cn( MONO, 'inline-flex h-6 items-center gap-1 rounded border border-[#E5E5E0] bg-white px-2 text-[10px] text-[#111] hover:border-[#111] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF5A1F]' ) }>
-											<Plus size={ 10 } />{ __( 'Add rule', 'coupon-lock' ) }
-										</button>
-									) }
-									{ menu === c.id && (
-										<div role="menu" className="absolute left-0 top-full z-10 mt-1 w-[280px] rounded border border-[#111] bg-white">
-											{ defs.filter( ( d ) => ! c.rules.includes( d.id ) ).map( ( d ) => (
-												<button key={ d.id } type="button" role="menuitem" onClick={ () => setRules( c, [ ...c.rules, d.id ] ) } className="block w-full border-b border-[#E5E5E0] px-3 py-2 text-left last:border-b-0 hover:bg-[#F4F4F1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#FF5A1F]">
-													<span className={ cn( MONO, 'text-[11px] font-semibold text-[#111]' ) }>{ d.label }</span>
-													<span className="mt-0.5 block text-[12px] leading-[16px] text-[#706F6A]">{ d.description }</span>
-													{ d.warning && <span className="mt-0.5 block text-[12px] leading-[16px] text-[#FF5A1F]">{ d.warning }</span> }
-												</button>
-											) ) }
-										</div>
-									) }
+									<RulePicker coupon={ c } defs={ defs } onApply={ ( r ) => setRules( c, r ) } />
 								</div>
 							</li>
 						) ) }

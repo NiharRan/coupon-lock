@@ -309,6 +309,18 @@ ts_check( ! $ok, 'legacy-flag coupon still refuses on an email match' );
 list( $ok ) = ts_apply( 'TSIPONLY', 'fresh.one@example.com', '', '', '', '' );
 ts_check( $ok, 'no IP available fails open' );
 
+// An add-on rule with its own match callback.
+add_filter( 'ts_coupon_lock_rules', function ( $r ) use ( $ipa ) {
+	$r['custom'] = array( 'label' => 'Custom', 'description' => 'Test rule', 'match' => fn( $h, $coupon ) => 'custom.shopper@example.com' === WC()->customer->get_billing_email() ? array( $ipa->get_id() ) : array() );
+	return $r;
+} );
+ts_rule_coupon( 'TSCUSTOM', array( 'custom' ) );
+list( $ok ) = ts_apply( 'TSCUSTOM', 'custom.shopper@example.com' );
+ts_check( ! $ok, 'rule with a match callback refuses when the callback returns orders' );
+list( $ok ) = ts_apply( 'TSCUSTOM', 'someone.else@example.com' );
+ts_check( $ok, 'rule with a match callback accepts when it returns none' );
+remove_all_filters( 'ts_coupon_lock_rules' );
+
 // REST: registry and per-coupon rules.
 wp_set_current_user( get_users( array( 'role' => 'administrator', 'number' => 1, 'fields' => 'ID' ) )[0] );
 $ts_rules = rest_do_request( new WP_REST_Request( 'GET', '/coupon-lock/v1/rules' ) )->get_data();
@@ -327,7 +339,7 @@ ts_clean();
 update_option( 'ts_coupon_lock_enabled', $ts_saved[0] ? $ts_saved[0] : 'yes' );
 update_option( 'ts_coupon_lock_hold_orders', $ts_saved[1] ? $ts_saved[1] : 'no' );
 $ts_product->delete( true );
-foreach ( array( 'TSFIRST', 'TSOPEN', 'TSIPONLY', 'TSEMAILONLY', 'TSNORULES', 'TSLEGACY' ) as $code ) {
+foreach ( array( 'TSFIRST', 'TSOPEN', 'TSIPONLY', 'TSEMAILONLY', 'TSNORULES', 'TSLEGACY', 'TSCUSTOM' ) as $code ) {
 	wp_delete_post( wc_get_coupon_id_by_code( $code ), true );
 }
 echo "\n" . ( $GLOBALS['ts_fail'] ? $GLOBALS['ts_fail'] . " FAILED\n" : "All passed\n" );
