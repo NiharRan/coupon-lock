@@ -46,13 +46,13 @@ class CouponGuard implements Module {
 			return;
 		}
 		$on = Rules::for_coupon( new \WC_Coupon( $post->ID ) );
-		echo '<div class="options_group"><div style="overflow:hidden;margin:12px;padding:12px 14px;border:1px solid #c3dcd8;border-radius:10px;background:#f0f7f6">';
-		echo '<strong>' . esc_html__( 'Coupon Lock rules', 'coupon-lock' ) . '</strong>';
-		echo '<p style="float:none;margin:6px 0 8px;padding:0">' . esc_html__( 'Refuse this coupon when the shopper matches an earlier order on any ticked detail, even under another account or Gmail alias.', 'coupon-lock' ) . '</p>';
+		echo '<div class="options_group"><div style="overflow:hidden;margin:12px;padding:14px 16px;border:1px solid #E5E5E0;border-radius:4px;background:#FAFAF7;color:#111">';
+		echo '<strong style="display:flex;align-items:center;gap:8px;font:600 12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase"><span aria-hidden="true" style="display:inline-flex;gap:3px"><i style="width:6px;height:6px;border-radius:50%;background:#111"></i><i style="width:6px;height:6px;border-radius:50%;background:#FF5A1F"></i></span>' . esc_html__( 'Coupon Lock rules', 'coupon-lock' ) . '</strong>';
+		echo '<p style="float:none;margin:8px 0 10px;padding:0;color:#706F6A">' . esc_html__( 'Refuse this coupon when the shopper matches an earlier order on any ticked detail, even under another account or Gmail alias.', 'coupon-lock' ) . '</p>';
 		foreach ( Rules::all() as $id => $rule ) {
-			echo '<label style="float:none;width:auto;display:block;margin:4px 0;padding:0"><input type="checkbox" style="float:none;margin:0 6px 0 0" name="' . esc_attr( Rules::META ) . '[]" value="' . esc_attr( $id ) . '" ' . checked( in_array( $id, $on, true ), true, false ) . ' /> <strong>' . esc_html( $rule['label'] ) . '</strong> ' . esc_html( $rule['description'] );
+			echo '<label style="float:none;width:auto;display:block;margin:4px 0;padding:0"><input type="checkbox" style="float:none;margin:0 6px 0 0;accent-color:#111" name="' . esc_attr( Rules::META ) . '[]" value="' . esc_attr( $id ) . '" ' . checked( in_array( $id, $on, true ), true, false ) . ' /> <strong>' . esc_html( $rule['label'] ) . '</strong> ' . esc_html( $rule['description'] );
 			if ( ! empty( $rule['warning'] ) ) {
-				echo ' <em>' . esc_html( $rule['warning'] ) . '</em>';
+				echo ' <em style="color:#FF5A1F;font-style:normal">' . esc_html( $rule['warning'] ) . '</em>';
 			}
 			echo '</label>';
 		}
