@@ -17,7 +17,6 @@ use Coupon_Lock\Features\CouponGuard;
 use Coupon_Lock\Features\Importer;
 use Coupon_Lock\Features\OrderTracker;
 use Coupon_Lock\Features\Privacy;
-use Coupon_Lock\Features\ProUpsell;
 use Coupon_Lock\Rest\Activity;
 use Coupon_Lock\Rest\Overview;
 use Coupon_Lock\Rest\Routes;
@@ -67,7 +66,6 @@ class Plugin {
 			new Privacy( $edges, $prints, $log, $events ),
 			new Routes( new Overview( $edges, $prints, $log, $events ), new Importer( $tracker, $edges, $prints, $events ), new Activity( $events, $edges, $log ) ),
 			new Page( plugin_dir_path( $this->file ) ),
-			new ProUpsell(),
 		);
 	}
 }

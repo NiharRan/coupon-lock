@@ -26,6 +26,10 @@ Some shoppers create many accounts to claim your first-order discount again and 
 
 Coupon Lock for WooCommerce stores one-way HMAC-SHA256 hashes of each order's billing email, phone, address and IP address in a table on your own site. The hashes cannot be reversed. Nothing is sent to any external server. Data is removed when an order is deleted or cancelled, through the WordPress personal data export and erase tools, and when the plugin is deleted. The plugin adds suggested text to your site's privacy policy page.
 
+== Support ==
+
+Questions or bug reports: contact@twinspotlab.com. Built by Twinspot Lab, https://twinspotlab.com.
+
 == Installation ==
 
 1. Install and activate WooCommerce.
@@ -89,12 +93,12 @@ The build bundles these libraries, all GPL-compatible: @radix-ui/react-dialog, @
 == Changelog ==
 
 = 0.5.1 =
+* Added Twinspot Lab support contact (contact@twinspotlab.com). Removed the Coupon Lock Pro admin note.
 * New Coupon Lock logo.
 * Choose per coupon which details to match: email, phone, address or IP address. Coupons that used "New customers only" keep matching email, phone and address.
 * The Rules tab lists every coupon, with search, filters and rule editing.
 
 = 0.5.0 =
-* A dismissible note about Coupon Lock Pro on the Coupon Lock screen.
 
 = 0.4.0 =
 * Add `Api::set_ring_state` and `Api::ring_state_for_order` so add-ons can allow, block or clear a ring.

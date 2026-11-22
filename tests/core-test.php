@@ -59,12 +59,6 @@ ts_coupon_lock_eq( Rings::shared( array( 'email_h' => '', 'phone_h' => '', 'addr
 ts_coupon_lock_eq( \Coupon_Lock\Core\Csv::row( array( 'a"b', '=1+1', 5 ) ), "\"a\"\"b\",\"'=1+1\",\"5\"\r\n", 'csv row' );
 echo "ok shared+csv\n";
 
-// Pro upsell visibility (pure).
-ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, true, 0 ), false, 'hidden_when_pro_active' );
-ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, false, time() + 5 * DAY_IN_SECONDS ), false, 'hidden_within_30_days_of_dismissal' );
-ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, false, 0 ), true, 'shown_never_dismissed' );
-ts_coupon_lock_eq( \Coupon_Lock\Features\ProUpsell::should_show( 1, false, time() - 1 ), true, 'shown_after_dismissal_expired' );
-echo "ok upsell\n";
 
 // Coupon rules: new meta wins over the legacy flag, dedupes, drops unknown ids.
 $ts_coupon_lock_known = array( 'email', 'phone', 'address', 'ip' );
