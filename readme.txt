@@ -70,6 +70,16 @@ Actions:
 
 `$order_ids` are earlier orders that share email, phone or address with the shopper.
 
+== Screenshots ==
+
+1. Overview: set up in three steps and see what a ring looks like.
+2. Overview with rings found, coupons guarded and the latest checkouts.
+3. Linked accounts: every ring, filtered by what the orders share.
+4. Ring detail: connection map and the shared details behind a ring.
+5. Rules: choose which details each coupon checks.
+6. Activity log of coupon checks and checkout decisions.
+7. Settings: refuse the coupon, hold the order, or do nothing.
+
 == Source code and third-party libraries ==
 
 The admin screen is a React app. The files in `build/` are compiled from the readable source in `src/`, available at https://github.com/NiharRan/coupon-lock. To rebuild: run `npm ci && npm run build`.

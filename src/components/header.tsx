@@ -30,9 +30,11 @@ export function Header( { tab, setTab, enabled, stats }: { tab: Tab; setTab: ( t
 		<div className="mb-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-2 border-b border-[#E5E5E0]">
 			<div className="flex flex-wrap items-center gap-x-8 gap-y-2">
 				<div className="flex items-center gap-2.5">
-					<svg width="28" height="22" viewBox="0 0 28 22" aria-hidden="true">
-						<circle cx="9" cy="11" r="8" fill="#111" />
-						<circle cx="19" cy="11" r="8" fill="#FF5A1F" style={ { mixBlendMode: 'multiply' } } />
+					<svg width="26" height="26" viewBox="0 0 256 256" aria-hidden="true">
+						<rect width="256" height="256" rx="40" fill="#111" />
+						<path d="M84 124V92a44 44 0 0 1 88 0v32" fill="none" stroke="#FAFAF7" strokeWidth="16" strokeLinecap="round" />
+						<circle cx="102" cy="160" r="40" fill="#FAFAF7" />
+						<circle cx="154" cy="160" r="40" fill="#FF5A1F" />
 					</svg>
 					<span className="text-[17px] font-semibold tracking-[-0.02em]">Coupon Lock</span>
 					{ stats && <span className={ cn( MONO, 'text-[10px] text-[#9A9A93]' ) }>{ stats.version }</span> }
