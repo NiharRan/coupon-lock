@@ -4,7 +4,7 @@ Tags: woocommerce, coupons, fraud, abuse, checkout
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.5.1
+Stable tag: 0.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -92,8 +92,11 @@ The build bundles these libraries, all GPL-compatible: @radix-ui/react-dialog, @
 
 == Changelog ==
 
+= 0.5.2 =
+* Added Twinspot Lab support contact (contact@twinspotlab.com).
+* Removed the Coupon Lock Pro admin note.
+
 = 0.5.1 =
-* Added Twinspot Lab support contact (contact@twinspotlab.com). Removed the Coupon Lock Pro admin note.
 * New Coupon Lock logo.
 * Choose per coupon which details to match: email, phone, address or IP address. Coupons that used "New customers only" keep matching email, phone and address.
 * The Rules tab lists every coupon, with search, filters and rule editing.
