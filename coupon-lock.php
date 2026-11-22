@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Coupon Lock for WooCommerce
  * Description:       Spot rings of linked accounts and block repeat welcome coupons at WooCommerce checkout. Runs on your store; no data leaves your site.
- * Version:           0.5.0
+ * Version:           0.5.1
  * Requires at least: 6.6
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce
@@ -18,7 +18,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-const TS_COUPON_LOCK_VERSION = '0.5.0';
+const TS_COUPON_LOCK_VERSION = '0.5.1';
 
 require __DIR__ . '/includes/autoload.php';
 
