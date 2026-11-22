@@ -1,6 +1,6 @@
 === Coupon Lock for WooCommerce ===
 Contributors: nihar007
-Tags: woocommerce, coupons, fraud, abuse, checkout
+Tags: woocommerce, coupon fraud, coupon abuse, coupons, checkout
 Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 7.4
@@ -8,11 +8,11 @@ Stable tag: 0.5.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Spot rings of linked accounts and block repeat welcome coupons at WooCommerce checkout. Runs on your store; no data leaves your site.
+Stop coupon fraud in WooCommerce. Spot linked accounts and block repeat welcome coupons at checkout. No data leaves your site.
 
 == Description ==
 
-Some shoppers create many accounts to claim your first-order discount again and again. Coupon Lock for WooCommerce links orders that share an email, phone number or address, even through other orders, and lets you stop the repeat coupon at checkout.
+Coupon fraud is costly: some shoppers create many accounts to claim your first-order or welcome discount again and again. Coupon Lock for WooCommerce links orders that share an email, phone number or address, even through other orders, and lets you stop the repeat coupon at checkout.
 
 * **Per-coupon rules.** Choose which details a coupon checks: email, phone, address or IP address. If the shopper matches an earlier order on any chosen rule, the coupon is refused. Gmail dots and `+tags` are treated as the same address. Set rules from the Rules tab or from the coupon's Usage restriction tab.
 * **Rings.** WooCommerce > Coupon Lock lists groups of orders linked to each other. A shares a phone with B and B shares an address with C, so all three show as one ring.
@@ -100,8 +100,6 @@ The build bundles these libraries, all GPL-compatible: @radix-ui/react-dialog, @
 * New Coupon Lock logo.
 * Choose per coupon which details to match: email, phone, address or IP address. Coupons that used "New customers only" keep matching email, phone and address.
 * The Rules tab lists every coupon, with search, filters and rule editing.
-
-= 0.5.0 =
 
 = 0.4.0 =
 * Add `Api::set_ring_state` and `Api::ring_state_for_order` so add-ons can allow, block or clear a ring.
